@@ -29,6 +29,7 @@ exports.Block = function (x, y, map, entities) {
         this.oreQuantity = quantity;
         this.oreHP = type.mhp;
         this.oreMHP = type.mhp;
+        this.oreSeed = Math.random();
     }
     this.getData = function() {
         return {
@@ -41,7 +42,8 @@ exports.Block = function (x, y, map, entities) {
             ore: this.ore,
             oreQuantity: this.oreQuantity,
             oreHP: this.oreHP,
-            oreMHP: this.oreMHP
+            oreMHP: this.oreMHP,
+            oreSeed: this.oreSeed
         }
     }
     this.changeHP = function(hp) {
@@ -64,6 +66,7 @@ exports.Block = function (x, y, map, entities) {
     this.oreQuantity = 0;
     this.oreHP = 0;
     this.oreMHP = 0;
+    this.oreSeed = Math.random();
 }
 
 exports.blockTypes = {
