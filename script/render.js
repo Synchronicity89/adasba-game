@@ -41,7 +41,7 @@ function drawLoop() {
         if (msg.map[i].ore == "wall") {
             ctx.font = "12px Monospace";
             ctx.fillStyle = "black";
-            ctx.fillText("shitty ore texture", msg.map[i].x * config.tX + config.tX / 2, msg.map[i].y * config.tY + config.tY / 2);
+            ctx.fillText("placeholder", msg.map[i].x * config.tX + config.tX / 2, msg.map[i].y * config.tY + config.tY / 2);
         }
     }
     ctx.fillStyle = "lightgray"
