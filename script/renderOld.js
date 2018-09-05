@@ -1,8 +1,8 @@
 var rLC = 0;
 
 var config = {
-    tX: 100,
-    tY: 100
+    tX: 50,
+    tY: 50
 }
 
 
