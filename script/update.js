@@ -7,6 +7,12 @@ function updateLoop() {
         msg.entities[i].x += msg.entities[i].dx;
         msg.entities[i].y += msg.entities[i].dy;
     }
+    for (var i = 49; 57 > i; i++) {
+        if (input.k[i]) {
+            input.s = i - 49;
+        }
+    }
+    input.s = clamp(input.s, 0, msg.players[msg.you].inv.length);
     requestAnimationFrame(updateLoop);
 }
 updateLoop();

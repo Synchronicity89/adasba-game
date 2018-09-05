@@ -34,6 +34,9 @@ exports.Block = function (x, y, map, entities) {
             solid: this.solid
         }
     }
+    this.ore = "air";
+    this.oreQuantity = 0;
+    this.oreHP = 0;
 }
 
 exports.blockTypes = {
@@ -48,3 +51,14 @@ exports.blockTypes = {
         solid: true
     }
 };
+
+exports.oreTypes = {
+    air: {
+        oreType: "air",
+        mhp: 0
+    },
+    wall: {
+        oreType: "wall",
+        mhp: 15
+    }
+}

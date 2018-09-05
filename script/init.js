@@ -11,6 +11,13 @@ var ws = new WebSocket('ws://50.39.110.171:42068');
 //when websocket opens
 ws.onopen = function () {
     console.log('Connected to server successfully.');
+}
+
+function startGame() {
+    start.style.display = "none";
+    nameInput.style.display = "none";
+    c.style.display = "inline";
+    ws.send(JSON.stringify({ type: "inputName", name: nameInput.value }));
     setInterval(inputLoop, 50);
 }
 

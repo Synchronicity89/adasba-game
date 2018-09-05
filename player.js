@@ -3,6 +3,7 @@ var func = require('./func.js');
 var bT = require('./block.js').blockTypes;
 
 exports.Player = function(ws, x, y, userID, w, h, map, parent) {
+    this.name = "Unnamed Player";
     this.ws = ws;
     this.map = map;
     this.parent = parent;
@@ -71,7 +72,8 @@ exports.Player = function(ws, x, y, userID, w, h, map, parent) {
             mhp: this.mhp,
             hp: this.hp,
             inv: this.inv,
-            input: this.input
+            input: this.input,
+            name: this.name
         };
     }
     this.collide = function() {

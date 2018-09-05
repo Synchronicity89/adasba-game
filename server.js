@@ -106,7 +106,13 @@ wss.on('connection', function (ws) {
     ws.on('message', function (message) {
         if (func.isJSON(message)) {
             var msg = JSON.parse(message);
-            clients[ws.userID].input = func.cBV(msg);
+            if (msg.type != "inputName") {
+                clients[ws.userID].input = func.cBV(msg);
+            } else {
+                if (msg.name.length < 64) {
+                    clients[ws.userID].name = msg.name;
+                }
+            }
         }
     });
 });

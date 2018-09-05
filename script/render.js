@@ -81,6 +81,14 @@ function drawLoop() {
             ctx.lineTo(truncate(msg.players[i].input.m.x + msg.players[i].x - c.width / 2, config.tX) + config.tX / 2, truncate(msg.players[i].input.m.y + msg.players[i].y - c.height / 2, config.tY) + config.tY / 2);
             ctx.stroke();
         }
+        ctx.lineWidth = 9;
+        ctx.strokeStyle = "#333333";
+        ctx.font = "24px Courier New";
+        ctx.textAlign = "center"
+        ctx.strokeText(msg.players[i].name, msg.players[i].x, msg.players[i].y - config.pX / 2 - 10);
+        ctx.strokeStyle = "#CCCCCC";
+        ctx.lineWidth = 2;
+        ctx.strokeText(msg.players[i].name, msg.players[i].x, msg.players[i].y - config.pX / 2 - 10);
     }
 
     if (msg.players.length > 0) {
