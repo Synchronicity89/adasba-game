@@ -40,10 +40,7 @@ exports.Player = function(ws, x, y, userID, w, h, map, parent) {
         }
         if (func.pythagoras(mOff.x, mOff.y, this.x, this.y) < 300) {
             if (this.input.m.m[0]) {
-                this.map.getBlockFromCoords(mOff.x, mOff.y).hp--;
-                if (this.map.getBlockFromCoords(mOff.x, mOff.y).hp <= 0) {
-                    this.map.getBlockFromCoords(mOff.x, mOff.y).switchTo(bT.air);
-                }
+                this.map.getBlockFromCoords(mOff.x, mOff.y).changeHP(-1);
             }
             if (this.input.m.m[2] && 
                 !func.pIntersect(this.parent, Math.floor(mOff.x / this.tx) * this.tx, Math.floor(mOff.y / this.ty) * this.ty, this.tx, this.ty) && 

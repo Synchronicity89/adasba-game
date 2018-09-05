@@ -24,6 +24,12 @@ exports.Block = function (x, y, map, entities) {
             this.solid = type.solid;
         }
     }
+    this.switchToOre = function(type, quantity) {
+        this.ore = type.oreType;
+        this.oreQuantity = quantity;
+        this.oreHP = type.mhp;
+        this.oreMHP = type.mhp;
+    }
     this.getData = function() {
         return {
             x: this.x,
@@ -31,12 +37,33 @@ exports.Block = function (x, y, map, entities) {
             blockType: this.blockType,
             mhp: this.mhp,
             hp: this.hp,
-            solid: this.solid
+            solid: this.solid,
+            ore: this.ore,
+            oreQuantity: this.oreQuantity,
+            oreHP: this.oreHP,
+            oreMHP: this.oreMHP
+        }
+    }
+    this.changeHP = function(hp) {
+        this.hp += hp;
+        this.oreHP += hp;
+        if (this.hp <= 0) {
+            this.switchTo(exports.blockTypes.air);
+        }
+        console.log(this.oreHP);
+        if (this.oreHP <= 0 && this.ore != "air") {
+            this.entities.push(new Entity(this.x * this.map.tx + this.map.tx / 2, this.y * this.map.ty + this.map.ty / 2, "item", this.ore, eT.item));
+            this.oreQuantity--;
+            this.oreHP = this.oreMHP;
+        }
+        if (this.oreQuantity <= 0) {
+            this.switchToOre(exports.oreTypes.air, 0);
         }
     }
     this.ore = "air";
     this.oreQuantity = 0;
     this.oreHP = 0;
+    this.oreMHP = 0;
 }
 
 exports.blockTypes = {

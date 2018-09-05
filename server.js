@@ -17,6 +17,9 @@ var Block = require('./block.js').Block;
 //terrain types
 var bT = require('./block.js').blockTypes;
 
+//terrain ore types
+var oT = require('./block.js').oreTypes;
+
 //a bunch of functions i use for stuff and things
 var func = require('./func.js');
 
@@ -78,8 +81,12 @@ var entities = [];
 //terrain
 var t = new Map(c.mapX, c.mapY, c.tileX, c.tileY, entities);
 
-for (var i = 0; 500 > i; i++) {
+for (var i = 0; 1000 > i; i++) {
     t.getBlock(Math.floor(Math.random() * c.mapX), Math.floor(Math.random() * c.mapY)).switchTo(bT.wall);
+}
+
+for (var i = 0; 1000 > i; i++) {
+    t.getBlock(Math.floor(Math.random() * c.mapX), Math.floor(Math.random() * c.mapY)).switchToOre(oT.wall, Math.floor(Math.random() * 20));
 }
 
 for (var i = 0; c.mapY > i; i++) {
@@ -132,7 +139,7 @@ function loop() {
                 entities: entities
             };
             t.doToRectFromCoords(clients[i].x - 960, clients[i].y - 540, 1920 + 2 * c.tileX, 1080 + 2 * c.tileY, function (tile, x, y) {
-                if (tile.blockType != "air") {
+                if (tile.blockType != "air" || tile.ore != "air") {
                     toSend.map.push(tile.getData());
                 }
             });

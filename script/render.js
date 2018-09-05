@@ -29,6 +29,7 @@ function drawLoop() {
 
     ctx.lineWidth = 5;
 
+    
     ctx.lineWidth = 12;
     for (var i = 0; msg.map.length > i; i++) {
         if (msg.map[i].blockType == "wall") {
@@ -37,24 +38,34 @@ function drawLoop() {
             ctx.fillRect(msg.map[i].x * config.tX, msg.map[i].y * config.tY, config.tX, config.tY)
             ctx.strokeRect(msg.map[i].x * config.tX, msg.map[i].y * config.tY, config.tX, config.tY);
         }
+        if (msg.map[i].ore == "wall") {
+            ctx.font = "12px Monospace";
+            ctx.fillStyle = "black";
+            ctx.fillText("shitty ore texture", msg.map[i].x * config.tX + config.tX / 2, msg.map[i].y * config.tY + config.tY / 2);
+        }
     }
+    ctx.fillStyle = "lightgray"
     for (var i = 0; msg.map.length > i; i++) {
         msg.map[i].neighbors = 0;
         for (var i2 = 0; msg.map.length > i2; i2++) {
-            if (msg.map[i].x == msg.map[i2].x - 1 && msg.map[i].y == msg.map[i2].y) {
-                ctx.fillRect(msg.map[i].x * config.tX + 6, msg.map[i].y * config.tY + 6, config.tX * 2 - 12, config.tY - 12);
-                msg.map[i].neighbors++;
-            }
-            if (msg.map[i].y == msg.map[i2].y - 1 && msg.map[i].x == msg.map[i2].x) {
-                ctx.fillRect(msg.map[i].x * config.tX + 6, msg.map[i].y * config.tY + 6, config.tX - 12, config.tY * 2 - 12);
-                msg.map[i].neighbors++;
-            }
-            if (msg.map[i].y == msg.map[i2].y - 1 && msg.map[i].x == msg.map[i2].x - 1) {
-                msg.map[i].neighbors++;
+            if (msg.map[i].blockType == "wall" && msg.map[i2].blockType == "wall") {
+                if (msg.map[i].x == msg.map[i2].x - 1 && msg.map[i].y == msg.map[i2].y) {
+                    ctx.fillRect(msg.map[i].x * config.tX + 6, msg.map[i].y * config.tY + 6, config.tX * 2 - 12, config.tY - 12);
+                    msg.map[i].neighbors++;
+                }
+                if (msg.map[i].y == msg.map[i2].y - 1 && msg.map[i].x == msg.map[i2].x) {
+                    ctx.fillRect(msg.map[i].x * config.tX + 6, msg.map[i].y * config.tY + 6, config.tX - 12, config.tY * 2 - 12);
+                    msg.map[i].neighbors++;
+                }
+                if (msg.map[i].y == msg.map[i2].y - 1 && msg.map[i].x == msg.map[i2].x - 1) {
+                    msg.map[i].neighbors++;
+                }
             }
         }
-        if (msg.map[i].neighbors == 3) {
-            ctx.fillRect(msg.map[i].x * config.tX + config.tX - 7, msg.map[i].y * config.tY + config.tY - 7, 14, 14);
+        if (msg.map[i].blockType == "wall") {
+            if (msg.map[i].neighbors == 3) {
+                ctx.fillRect(msg.map[i].x * config.tX + config.tX - 7, msg.map[i].y * config.tY + config.tY - 7, 14, 14);
+            }
         }
     }
 
