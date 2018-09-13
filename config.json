@@ -1,10 +1,20 @@
 { 
     "startX": 1500, 
     "startY": 1500,
-    "mapX": 100,
-    "mapY": 100,
+    "mapX": 250,
+    "mapY": 250,
     "tileX": 100,
     "tileY": 100,
     "playerW": 50,
-    "playerH": 50
+    "playerH": 50,
+    "startInv": [
+        {
+            "item": "belt",
+            "quantity": 25
+        },
+        {
+            "item": "wall",
+            "quantity": 50
+        }
+    ]
 }

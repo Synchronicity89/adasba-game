@@ -2,6 +2,8 @@ var func = require('./func.js');
 
 var bT = require('./block.js').blockTypes;
 
+var toBlock = require('./block.js').toBlock;
+
 exports.Player = function(ws, x, y, userID, w, h, map, parent) {
     this.name = "Unnamed Player";
     this.ws = ws;
@@ -23,8 +25,10 @@ exports.Player = function(ws, x, y, userID, w, h, map, parent) {
     this.mhp = 1000;
     this.hp = 1000;
     this.inv = [];
-    this.input = { m: { x: 0, y: 0, m: [false, false, false] }, k: [] };
+    this.input = { m: { x: 0, y: 0, m: [false, false, false] }, k: [], kD: [], s: 0, cQ: [] };
+    this.defaultDir = 0;
     this.respondToInput = function() {
+        this.delay1--;
         var mOff = { x: this.input.m.x - 960 + this.x, y: this.input.m.y - 540 + this.y }
         if (this.input.k[87]) {
             this.dy -= this.accely;
@@ -38,18 +42,35 @@ exports.Player = function(ws, x, y, userID, w, h, map, parent) {
         if (this.input.k[68]) {
             this.dx += this.accelx;
         }
+        this.input.s = func.clamp(this.input.s, 0, this.inv.length - 1);
         if (func.pythagoras(mOff.x, mOff.y, this.x, this.y) < 300) {
             if (this.input.m.m[0]) {
                 this.map.getBlockFromCoords(mOff.x, mOff.y).changeHP(-1);
             }
             if (this.input.m.m[2] && 
                 !func.pIntersect(this.parent, Math.floor(mOff.x / this.tx) * this.tx, Math.floor(mOff.y / this.ty) * this.ty, this.tx, this.ty) && 
-                this.hasInInv([{ item: "wall", quantity: 1 }]) &&
+                this.hasInInv([{ item: this.inv[this.input.s].item, quantity: 1 }]) &&
                 this.map.getBlockFromCoords(mOff.x, mOff.y).blockType == "air") {
-                this.map.getBlockFromCoords(mOff.x, mOff.y).switchTo(bT.wall);
-                this.addToInv("wall", -1);
+                this.map.getBlockFromCoords(mOff.x, mOff.y).switchTo(toBlock(this.inv[this.input.s].item));
+                this.addToInv(this.inv[this.input.s].item, -1);
+            }
+            if (this.input.kD[82] == true && this.map.getBlockFromCoords(mOff.x, mOff.y).blockType == "belt") {
+                this.defaultDir++;
+                this.defaultDir %= 4;
+                this.map.getBlockFromCoords(mOff.x, mOff.y).dir++;
+                this.map.getBlockFromCoords(mOff.x, mOff.y).dir %= 4;
             }
         }
+        for (var i = 0; this.input.kD.length > i; i++) {
+            this.input.kD[i] = false;
+        }
+        for (var i = 0; this.input.cQ.length > i; i++) {
+            if (this.hasInInv(exports.recipes[this.input.cQ[i]].req)) {
+                this.addToInv(exports.recipes[this.input.cQ[i]].res.item, exports.recipes[this.input.cQ[i]].res.quantity);
+                this.removeMoreFromInv(exports.recipes[this.input.cQ[i]].req)
+            }
+        }
+        this.input.cQ = [];
     }
     this.communicate = function(msgToSend) {
         if (this.ws.readyState = this.ws.OPEN) {
@@ -70,7 +91,8 @@ exports.Player = function(ws, x, y, userID, w, h, map, parent) {
             hp: this.hp,
             inv: this.inv,
             input: this.input,
-            name: this.name
+            name: this.name,
+            craftable: this.craftable
         };
     }
     this.collide = function() {
@@ -113,15 +135,22 @@ exports.Player = function(ws, x, y, userID, w, h, map, parent) {
             this.inv.push({ item: item, quantity: quantity });
         }
     }
+    this.addMoreToInv = function(itemList) {
+        for (var i = 0; itemList.length > i; i++) {
+            this.addToInv(itemList[i].item, itemList[i].quantity);
+        }
+    }
+    this.removeMoreFromInv = function(itemList) {
+        for (var i = 0; itemList.length > i; i++) {
+            this.addToInv(itemList[i].item, -itemList[i].quantity);
+        }
+    }
     this.hasInInv = function(itemList) {
-        hasItems = 0;
+        var hasItems = 0;
         for (var i = 0; itemList.length > i; i++) {
             for (var i2 = 0; this.inv.length > i2; i2++) {
-                if (!(itemList[i].item == this.inv[i2].item && itemList[i].quantity <= this.inv[i2].quantity)) {
-                    return false;
-                }
-                if (itemList[i].item == this.inv[i2].item) {
-                    hasItems++;
+                if (itemList[i].item == this.inv[i2].item && itemList[i].quantity <= this.inv[i2].quantity) {
+                    hasItems++
                 }
             }
         }
@@ -130,4 +159,24 @@ exports.Player = function(ws, x, y, userID, w, h, map, parent) {
         }
         return false;
     }
+    this.craftable = [];
+    this.getCraftList = function() {
+        this.craftable = [];
+        for (var i = 0; exports.recipes.length > i; i++) {
+            if (this.hasInInv(exports.recipes[i].req)) {
+                this.craftable.push(exports.recipes[i]);
+            }
+        }
+    }
 }
+
+exports.recipes = [
+    {
+        req: [
+            { item: "wall", quantity: 3 }
+        ],
+        res: { item: "belt", quantity: 1 },
+        name: "belt",
+        index: 0
+    }
+];

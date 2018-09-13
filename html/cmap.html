@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <canvas id="canvas" width="1000" height="1000" crossorigin="Anonymous"></canvas>
+        <script>
+            function loadArray(imgUrl, w, h) {
+                var img = new Image();
+                img.src = imgUrl;
+                var c = document.getElementById('canvas');
+                var ctx = c.getContext('2d');
+                c.width = w;
+                c.height = h;
+                ctx.drawImage(img, 0, 0);
+                console.log(JSON.stringify(Array.prototype.slice.call(ctx.getImageData(0, 0, c.width, c.height).data)));
+            }
+        </script>
+    </body>
+</html>

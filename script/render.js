@@ -2,11 +2,31 @@ var rLC = 0;
 
 var isOverBlock = false;
 
-var config = {
-    tX: 100,
-    tY: 100,
-    pX: 50,
-    pY: 50
+function connect(block, color, context) {
+    context.fillStyle = color;
+    for (var i = 0; msg.map.length > i; i++) {
+        msg.map[i].neighbors = 0;
+        for (var i2 = 0; msg.map.length > i2; i2++) {
+            if (msg.map[i].blockType == block && msg.map[i2].blockType == block) {
+                if (msg.map[i].x == msg.map[i2].x - 1 && msg.map[i].y == msg.map[i2].y) {
+                    context.fillRect(msg.map[i].x * config.tX + 6, msg.map[i].y * config.tY + 6, config.tX * 2 - 12, config.tY - 12);
+                    msg.map[i].neighbors++;
+                }
+                if (msg.map[i].y == msg.map[i2].y - 1 && msg.map[i].x == msg.map[i2].x) {
+                    context.fillRect(msg.map[i].x * config.tX + 6, msg.map[i].y * config.tY + 6, config.tX - 12, config.tY * 2 - 12);
+                    msg.map[i].neighbors++;
+                }
+                if (msg.map[i].y == msg.map[i2].y - 1 && msg.map[i].x == msg.map[i2].x - 1) {
+                    msg.map[i].neighbors++;
+                }
+            }
+        }
+        if (msg.map[i].blockType == block) {
+            if (msg.map[i].neighbors == 3) {
+                context.fillRect(msg.map[i].x * config.tX + config.tX - 7, msg.map[i].y * config.tY + config.tY - 7, 14, 14);
+            }
+        }
+    }
 }
 
 function drawLoop() {
@@ -27,54 +47,59 @@ function drawLoop() {
         }
     }
 
-    ctx.lineWidth = 5;
-
-    
     ctx.lineWidth = 12;
     for (var i = 0; msg.map.length > i; i++) {
-        if (msg.map[i].blockType == "wall") {
-            ctx.fillStyle = "lightgray"
-            ctx.strokeStyle = "#848484";
-            ctx.fillRect(msg.map[i].x * config.tX, msg.map[i].y * config.tY, config.tX, config.tY)
-            ctx.strokeRect(msg.map[i].x * config.tX, msg.map[i].y * config.tY, config.tX, config.tY);
-        }
         if (msg.map[i].ore == "wall") {
-            ctx.font = "12px Monospace";
-            ctx.fillStyle = "black";
-            ctx.fillText("placeholder", msg.map[i].x * config.tX + config.tX / 2, msg.map[i].y * config.tY + config.tY / 2);
+            seed = msg.map[i].oreSeed;
+            for(i2=0;i2<Math.sqrt(msg.map[i].oreQuantity * 2);i2++){
+            ctx.drawImage(assets.wallOre, msg.map[i].x * config.tX+(random()*config.tX-config.tX/3.5), msg.map[i].y * config.tY+(random()*config.tY-config.tY/3.5));
+            }
         }
     }
-    ctx.fillStyle = "lightgray"
+
     for (var i = 0; msg.map.length > i; i++) {
-        msg.map[i].neighbors = 0;
-        for (var i2 = 0; msg.map.length > i2; i2++) {
-            if (msg.map[i].blockType == "wall" && msg.map[i2].blockType == "wall") {
-                if (msg.map[i].x == msg.map[i2].x - 1 && msg.map[i].y == msg.map[i2].y) {
-                    ctx.fillRect(msg.map[i].x * config.tX + 6, msg.map[i].y * config.tY + 6, config.tX * 2 - 12, config.tY - 12);
-                    msg.map[i].neighbors++;
-                }
-                if (msg.map[i].y == msg.map[i2].y - 1 && msg.map[i].x == msg.map[i2].x) {
-                    ctx.fillRect(msg.map[i].x * config.tX + 6, msg.map[i].y * config.tY + 6, config.tX - 12, config.tY * 2 - 12);
-                    msg.map[i].neighbors++;
-                }
-                if (msg.map[i].y == msg.map[i2].y - 1 && msg.map[i].x == msg.map[i2].x - 1) {
-                    msg.map[i].neighbors++;
-                }
-            }
-        }
-        if (msg.map[i].blockType == "wall") {
-            if (msg.map[i].neighbors == 3) {
-                ctx.fillRect(msg.map[i].x * config.tX + config.tX - 7, msg.map[i].y * config.tY + config.tY - 7, 14, 14);
-            }
+        if (msg.map[i].blockType == "belt") {
+            imgRotate(ctx, assets.belt, msg.map[i].x * config.tX + config.tX / 2, msg.map[i].y * config.tY + config.tY / 2, config.tX + 12, config.tY + 12, msg.map[i].dir * Math.PI / 2);
         }
     }
+    
+
+    for (var i = 0; msg.map.length > i; i++) {
+        if (msg.map[i].blockType == "wall") {
+            ctx.drawImage(assets.wall, msg.map[i].x * config.tX - 6, msg.map[i].y * config.tY - 6);
+        }
+        if (msg.map[i].blockType == "unbreakable") {
+            ctx.drawImage(assets.unbreakable, msg.map[i].x * config.tX - 6, msg.map[i].y * config.tY - 6);
+        }
+    }
+
+    connect('wall', "lightgray", ctx);
+    connect('unbreakable', "#444444", ctx);
 
     for (var i = 0; msg.entities.length > i; i++) {
         if (msg.entities[i].subType == "wall") {
             ctx.fillStyle = "lightgray"
             ctx.strokeStyle = "#848484";
-            ctx.fillRect(msg.entities[i].x - config.tX / 4, msg.entities[i].y - config.tY / 4, config.tX / 2, config.tY / 2)
-            ctx.strokeRect(msg.entities[i].x - config.tX / 4, msg.entities[i].y - config.tY / 4, config.tX / 2, config.tY / 2);
+            // ctx.save();
+            // ctx.translate(msg.entities[i].x, msg.entities[i].y);
+            // ctx.fillRect(-config.tX / 4, -config.tY / 4, config.tX / 2, config.tY / 2)
+            // ctx.strokeRect(-config.tX / 4, -config.tY / 4, config.tX / 2, config.tY / 2);
+            // ctx.restore();
+            ctx.drawImage(assets.wall, msg.entities[i].x -config.tX / 4 - 3, msg.entities[i].y -config.tY / 4 - 3, config.tX / 2 + 6, config.tY / 2 + 6);
+        }
+        if (msg.entities[i].subType == "belt") {
+            ctx.fillStyle = "lightgray"
+            ctx.strokeStyle = "#608dff";
+            ctx.save();
+            ctx.translate(msg.entities[i].x, msg.entities[i].y);
+            ctx.fillRect(-config.tX / 4, -config.tY / 4, config.tX / 2, config.tY / 2)
+            ctx.strokeRect(-config.tX / 4, -config.tY / 4, config.tX / 2, config.tY / 2);
+            ctx.beginPath();
+            ctx.moveTo(-config.tX / 4 + config.tX / 6, -config.tY / 4 + 5 * config.tY / 16);
+            ctx.lineTo(-config.tX / 4 + config.tX / 4, -config.tY / 4 + 3 * config.tY / 16);
+            ctx.lineTo(-config.tX / 4 + 2 * config.tX / 6, -config.tY / 4 + 5 * config.tY / 16);
+            ctx.stroke();
+            ctx.restore();
         }
     }
 
@@ -143,25 +168,89 @@ function drawLoop() {
     ctx.restore();
     if (msg.players.length > 0) {
         ctx.lineWidth = 12;
-        ctx.fillStyle = "#56565688";
+        ctx.fillStyle = "#00000044";
         ctx.fillRect(-20, c.height - 100, c.width + 40, 140);
         for (var i = 0; msg.players[msg.you].inv.length > i; i++) {
             ctx.save();
-            ctx.translate(c.width / 2 + 150 * i - 150 * input.s, c.height - 50);
-            if (msg.players[msg.you].inv[i].item = "wall") {
+            ctx.translate(c.width / 2 + 75 * i - 75 * input.s, c.height - 60);
+            if (msg.players[msg.you].inv[i].item == "wall") {
                 ctx.lineWidth = 12;
                 ctx.fillStyle = "lightgray"
                 ctx.strokeStyle = "#848484";
                 ctx.fillRect(-25, -25, 50, 50);
                 ctx.strokeRect(-25, -25, 50, 50);
+            }
+            if (msg.players[msg.you].inv[i].item == "belt") {
+                ctx.fillStyle = "lightgray"
+                ctx.strokeStyle = "#608dff";
+                ctx.fillRect(-config.tX / 4, -config.tY / 4, config.tX / 2, config.tY / 2)
+                ctx.strokeRect(-config.tX / 4, -config.tY / 4, config.tX / 2, config.tY / 2);
+                ctx.beginPath();
+                ctx.moveTo(-config.tX / 4 + config.tX / 6, -config.tY / 4 + 5 * config.tY / 16);
+                ctx.lineTo(-config.tX / 4 + config.tX / 4, -config.tY / 4 + 3 * config.tY / 16);
+                ctx.lineTo(-config.tX / 4 + 2 * config.tX / 6, -config.tY / 4 + 5 * config.tY / 16);
+                ctx.stroke();
+            }
+            ctx.lineWidth = 9;
+            ctx.strokeStyle = "#333333";
+            ctx.font = "24px Courier New";
+            ctx.textAlign = "center"
+            ctx.strokeText(msg.players[msg.you].inv[i].quantity, 0, 52);
+            ctx.strokeStyle = "#CCCCCC";
+            ctx.lineWidth = 2;
+            ctx.strokeText(msg.players[msg.you].inv[i].quantity, 0, 52);
+            ctx.restore();
+        }
+        ctx.fillStyle = "#00000044";
+        ctx.fillRect(0, 0, 600, config.ctrl.length * 16 + 16);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.font = "16px Courier New";
+        ctx.textAlign = "left";
+        for (var i = 0; config.ctrl.length > i; i++) {
+            ctx.fillText(config.ctrl[i], 10, i * 16 + 18)
+        }
+    }
+    ctx.fillStyle = "#00000044";
+    ctx.fillRect(c.width - 100, 250, 100, c.height - 350);
+
+    if (msg.players.length > 0) {
+        for (var i = 0; msg.players[msg.you].craftable.length > i; i++) {
+            ctx.save();
+            ctx.translate(c.width - 100, 250 + i * 100);
+            if (msg.players[msg.you].craftable[i].res.item == "belt") {
+                ctx.drawImage(assets.belt, 19, 19, 62, 62);
+            }
+            ctx.lineWidth = 9;
+            ctx.strokeStyle = "#333333";
+            ctx.font = "24px Courier New";
+            ctx.textAlign = "center"
+            ctx.strokeText(msg.players[msg.you].craftable[i].res.quantity, 50, 56);
+            ctx.strokeStyle = "#CCCCCC";
+            ctx.lineWidth = 2;
+            ctx.strokeText(msg.players[msg.you].craftable[i].res.quantity, 50, 56);
+            if (inRect(c.width - 100 + i * 100, 250 + i * 100, 100, 100, input.m.x, input.m.y)) {
+                ctx.fillRect(0, 0, msg.players[msg.you].craftable[i].req.length * -100 - 127, 100);
+                for (var i2 = 0; msg.players[msg.you].craftable[i].req.length > i2; i2++) {
+                    if (msg.players[msg.you].craftable[i].req[i2].item == "wall") {
+                        ctx.drawImage(assets.wall, -81 - 100 * i, 19, 62, 62);
+                    }
+                    ctx.lineWidth = 9;
+                    ctx.strokeStyle = "#333333";
+                    ctx.font = "24px Courier New";
+                    ctx.textAlign = "center"
+                    ctx.strokeText(msg.players[msg.you].craftable[i].req[i2].quantity, -50 + -100 * i, 56);
+                    ctx.strokeStyle = "#CCCCCC";
+                    ctx.lineWidth = 2;
+                    ctx.strokeText(msg.players[msg.you].craftable[i].req[i2].quantity, -50 + -100 * i, 56);
+                }
                 ctx.lineWidth = 9;
                 ctx.strokeStyle = "#333333";
                 ctx.font = "24px Courier New";
                 ctx.textAlign = "center"
-                ctx.strokeText(msg.players[msg.you].inv[i].quantity, 0, 7);
+                ctx.strokeText("Requires:", msg.players[msg.you].craftable[i].req.length * -100 - 50, 56);
                 ctx.strokeStyle = "#CCCCCC";
                 ctx.lineWidth = 2;
-                ctx.strokeText(msg.players[msg.you].inv[i].quantity, 0, 7);
+                ctx.strokeText("Requires:", msg.players[msg.you].craftable[i].req.length * -100 - 50, 56);
             }
             ctx.restore();
         }
@@ -171,6 +260,14 @@ function drawLoop() {
     // ctx.strokeStyle = "rgba(100, 100, 100, " + ((100 - Math.abs(pythagoras(input.m.x, input.m.y, c.width / 2, c.height / 2) - 300)) / 200) + ")";
     // ctx.arc(c.width / 2, c.height / 2, 300, 0, Math.PI * 2);
     // ctx.stroke();
+    ctx.lineWidth = 9;
+    ctx.strokeStyle = "#333333";
+    ctx.font = "24px Courier New";
+    ctx.textAlign = "left";
+    ctx.strokeText("Websocket Delay Interval: " + webSocketDelay + " ms", 20, 1060);
+    ctx.strokeStyle = "#CCCCCC";
+    ctx.lineWidth = 2;
+    ctx.strokeText("Websocket Delay Interval: " + webSocketDelay + " ms", 20, 1060);
     requestAnimationFrame(drawLoop);
 }
 drawLoop();

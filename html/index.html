@@ -25,11 +25,14 @@
     </head>
     <body oncontextmenu="return false;">
         <canvas width="1920" height="1080" id="canvas" style="display:none"></canvas>
+        <canvas width="1920" height="1080" id="minimap" style="display:none;z-index:0"></canvas>
         <button id="start" onclick="startGame()">Start Game</button>
         <input placeholder="Your name here..." id="nameInput">
         <script type="application/javascript" src="/script/input.js"></script>
         <script type="application/javascript" src="/script/init.js"></script>
+        <script type="application/javascript" src="/script/imgs.js"></script>
         <script type="application/javascript" src="/script/render.js"></script>
         <script type="application/javascript" src="/script/update.js"></script>
+        <script type="application/javascript" src="/script/minimap.js"></script>
     </body>
 </html>

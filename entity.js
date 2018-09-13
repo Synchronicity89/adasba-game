@@ -15,8 +15,8 @@ exports.Entity = function(x, y, entityType, subType, type) {
         this.dy *= 0.98;
     }
     this.attractTo = function(target) {
-        this.dx += func.clamp(-25000 * Math.cos(Math.atan2(this.y - target.y, this.x - target.x)) / Math.pow(func.pythagoras(this.x, this.y, target.x, target.y), 2), -10, 10);
-        this.dy += func.clamp(-25000 * Math.sin(Math.atan2(this.y - target.y, this.x - target.x)) / Math.pow(func.pythagoras(this.x, this.y, target.x, target.y), 2), -10, 10);
+        this.dx += func.clamp(-2500000 * Math.cos(Math.atan2(this.y - target.y, this.x - target.x)) / Math.pow(func.pythagoras(this.x, this.y, target.x, target.y), 3), -5, 5);
+        this.dy += func.clamp(-2500000 * Math.sin(Math.atan2(this.y - target.y, this.x - target.x)) / Math.pow(func.pythagoras(this.x, this.y, target.x, target.y), 3), -5, 5);
     }
     this.dead = false;
 }

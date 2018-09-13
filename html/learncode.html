@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Ubuntu+Mono" rel="stylesheet">
+        <meta charset="utf-8">
+        <style type="text/css">
+            body {
+                background: #DDDDDD;
+                text-align: center;
+                margin: 40px;
+            }
+            h1 {
+                background: #C8C8C8;
+                color: #333333;
+                border: 3px solid #C0C0C0;
+                text-align: center;
+                padding: 10px;
+                display: inline;
+                font-family: 'Ubuntu', sans-serif;
+                font-size: 48px;
+            }
+            p {
+                background: #C8C8C8;
+                color: #333333;
+                border: 3px solid #C0C0C0;
+                padding: 10px;
+                display: block;
+                font-family: 'Ubuntu', sans-serif;
+                font-size: 16px;
+                margin-left: 15%;
+                margin-right: 15%;
+                text-align: left;
+            }
+            pre {
+                font-family: 'Ubuntu Mono', monospace;
+                color: #333333;
+                background: #B8B8B8;
+                border: 3px solid #B0B0B0;
+                text-align: left;
+                padding: 10px;
+                display: block;
+                font-size: 16px;
+                margin-left: 25%;
+                margin-right: 25%;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Learn to Code!</h1>
+        <p>Hi! Today I'd like to teach you how to code. However, before we start talking about the code itself, I think we should talk about strategies we can use to learn to code. This guide alone won't give you the skills you need to code successfully. You'll have to do more.</p>
+        <p>One of the biggest resources you have has been right under your nose the whole time. What resource is this? <a href="https://www.google.com">Believe it or not, it's literally just Google Search.</a> If you have a problem with no solution, try Googling it and searching through the results for a good answer. If you want to know how to do something you don't know how to do, just search it. One good tip is to try to make your searches as general as possible. This may include splitting your search into multiple searches, each of them more likely to have good answers since they're less specific. Say, for example, that you want to make a character in a game move upward if you press the up arrow key. You would likely find a few good results by searching "How to make a game character move up with the up arrow key". However, you would get far more useful results by searching "How to make the computer respond to key presses" and "How to change the position of a character". Ultimately, moving a character when a key is pressed is just changing its position in response to a key being pressed down. Even "control a game character with keyboard input" might give some more results, since it's likely that someone will have made a guide for something done so frequently in games.</p>
+        <p>Another thing you'll need is a whole lot of motivation. Even for the first few months, coding may be dull and boring. You'll only be able to make simple projects, having to skip out on more complicated, interesting things because of their difficulty. You'll have to deal with mountains of bugs and hours of frustration. However, once you fix that bug which took you five hours to solve, you will probably feel more satisfied than you have ever felt in your life. Once you fix that project you've been working on for days, you'll breathe a sigh of relief, sit back, and relax. With the power of code on your side, you'll be able to do all kinds of things regular users can't do.</p>
+        <p>So, with all that being said, let's jump right into it. I'm going to be starting out with HTML and CSS, which technically aren't programming languages, but they provide a simple and easy way of learning code which gives results quickly. With that, here's our "sample page", the minimum which any browser should be able to load.</p>
+        <pre>
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta charset="UTF-8"&gt;
+        &lt;style type="text/css"&gt;
+        
+        &lt;/style&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+
+    &lt;/body&gt;
+&lt;/html&gt;
+        </pre>
+        <p>Let's unpack all of this so we understand what everything means.</p>
+        <pre>
+&lt;!DOCTYPE html&gt;
+        </pre>
+        <p>This basically declares that this is an HTML document, so the browser knows that this is HTML. Just include it at the top of your page and you should be fine.</p>
+        <pre>
+&lt;html&gt;
+        </pre>
+        <p>This signifies the opening of the "html" tag. Tags begin with &lt;tag&gt;, and end with &lt;/tag&gt;. Notice that at the end of the code we see &lt;/html&gt;, the end of the "html" tag. Within this tag is all of our other HTML.</p>
+        <pre>
+    &lt;head&gt;
+        </pre>
+        <p>Within the "head" we put things like css and fonts. None of these are the actual HTML elements that display on the page itself. Things in the head element can change what the page looks like, but they aren't the actual HTML elements that make things like text and images.</p>
+        <pre>
+        &lt;meta charset="UTF-8"&gt;
+        </pre>
+        <p>Specifies the character encoding for the HTML document. For now just include this in your document.</p>
+        <pre>
+        &lt;style type="text/css"&gt;
+
+        &lt;/style&gt;
+        </pre>
+        <p>Everything inside the style tag allows you to change the look of HTML elements, the position of HTML elements, and more. Basically, it edits their appearance. The "type=text/css" part says that everything inside the style tag is CSS, the "language" used to edit the appearance of HTML elements.</p>
+        <pre>
+    &lt;/head&gt;
+        </pre>
+        <p>The end of the "head" tag. Everything past this point is not within the "head".</p>
+        <pre>
+    &lt;body&gt;
+
+    &lt;/body&gt;
+        </pre>
+        <p>The body tag is where your HTML code actually goes. I could put paragraphs of text here. I could put images here. I could put videos here. Basically, anything that's displayed on the page is here.</p>
+        <pre>
+&lt;/html&gt;
+        </pre>
+        <p>The end of the HTML tag, and the end of our sample page.</p>
+        <p>So now that we know what all of this means, how exactly do we "run" the code?</p>
+        <p>Because HTML is what webpages are made of, we need to run this using a browser, like Google Chrome or Mozilla Firefox.</p>
+    </body>
+</html>

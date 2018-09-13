@@ -12,7 +12,6 @@ function updateLoop() {
             input.s = i - 49;
         }
     }
-    input.s = clamp(input.s, 0, msg.players[msg.you].inv.length);
     requestAnimationFrame(updateLoop);
 }
 updateLoop();

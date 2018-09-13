@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <canvas id="canvas" width="1000" height="1000"></canvas>
+        <script>
+            //make websocket
+            var ws = new WebSocket('ws://50.39.110.171:42068');
+
+            //when websocket opens
+            ws.onopen = function () {
+                console.log('Connected to server successfully.');
+                ws.send("gimme map");
+            }
+            
+            var t = [];
+            var repeat = true;
+
+            //when msg received
+            ws.onmessage = function (ev) {
+                if (repeat) {
+                    t = JSON.parse(ev.data);
+                    drawMap();
+                    repeat = false;
+                }
+            }
+
+            var c = document.getElementById('canvas');
+            var ctx = c.getContext('2d');
+            
+            function drawMap() {
+                for (var i = 0; t.length > i; i++) {
+                    for (var i2 = 0; t[i].length > i2; i2++) {
+                        if (t[i2][i].blockType != "air") {
+                            ctx.fillRect(i, i2, 1, 1);
+                        }
+                    }
+                }
+            }
+        </script>
+    </body>
+</html>

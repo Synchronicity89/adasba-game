@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+        canvas {
+            position:absolute;
+            top:0px;
+            left:0px;
+            width:100%;
+            height:100%;
+            filter:brightness(0.1);
+            filter:contrast(200%);
+        }
+        body {
+            background: black;
+        }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="1920" height="1080"></canvas>
+    <script>
+    function mandelbrotRect(x, y, w, h, iterations, resx, resy) {
+        var mData = [];
+        for (var i = 0; resy > i; i++) {
+        mData.push([]);
+            for (var i2 = 0; resx > i2; i2++) {
+                mData[i].push({
+                    iterations: 0,
+                    path: [{ x: 0, y: 0 }],
+                    in: true,
+                    pos: { x: x + i2 * (w / resx), y: y + i * (h / resy) }
+                });
+                for (var i3 = 0; iterations > i3 && Math.sqrt(Math.pow(mData[i][i2].path[mData[i][i2].path.length - 1].x, 2) + Math.pow(mData[i][i2].path[mData[i][i2].path.length - 1].y, 2)) < 2; i3++) {
+                    mData[i][i2].path.push({ 
+                        x: Math.pow(mData[i][i2].path[i3].x, 2) - Math.pow(mData[i][i2].path[i3].y, 2) + mData[i][i2].pos.x,
+                        y: 2 * mData[i][i2].path[i3].x * mData[i][i2].path[i3].y + mData[i][i2].pos.y
+                    });
+                    if (Math.sqrt(Math.pow(mData[i][i2].path[i3 + 1].x, 2) + Math.pow(mData[i][i2].path[i3 + 1].y, 2)) > 2) {
+                        mData[i][i2].in = false;
+                    } else if (mData[i][i2].in) {
+                        mData[i][i2].iterations++;
+                    }
+                }
+            }
+        }
+        return mData;
+    }
+
+    var c = document.getElementById("canvas");
+    var ctx = c.getContext("2d");
+
+    ctx.fillRect(0, 0, c.width, c.height);
+
+    //ctx.fillStyle = "#FFFFFF02";
+    ctx.globalAlpha = 1;
+
+    var mBrot = [];
+
+    var res = 16;
+
+    var i4 = 0;
+
+    var spd = 0.001;
+
+    var m = { x: 0, y: 0 };
+    var md = { x: 0, y: 0 };
+
+    document.addEventListener("mousemove", function(e) {
+        m = { x: e.clientX - c.width / 2, y: e.clientY - c.height / 2 };
+    }, false);
+
+    function iLoop() {
+        md.x += m.x / 200000;
+        md.y += m.y / 200000;
+        md.x *= 0.997;
+        md.y *= 0.997;
+        requestAnimationFrame(iLoop);
+    }
+    iLoop();
+
+    function clamp(min, max, value) {
+        if (max < value) {
+            return max;
+        }
+        if (value < min) {
+            return min;
+        }
+        return value;
+    }
+
+    function anim() {
+        //return { x: (md.x % (3.2 / res)), y: (md.y % (3.2 / res)) };
+        //return { x: ((0.0005 * i4) % (3.2 / res)), y: 0 };
+        return md;
+    }
+
+    var mBrot2 = mandelbrotRect(-2.2 + anim().x, -1.6 + 3.2 + anim().y, 3.2, 3.2, 256, res, res);
+
+    //((0.00003 * i4) % (3.2 / res))
+    function loop() {
+        mBrot = mandelbrotRect(-2.2 + anim().x, -1.6 + anim().y, 3.2, 3.2, 256, res, res);
+        for (var i = 0; mBrot.length > i; i++) {
+            ctx.strokeStyle = "hsl(" + i * 64 + ", 100%, 85%)";
+            ctx.fillStyle = "hsl(" + i * 64 + ", 100%, 85%)";
+            for (var i2 = 0; mBrot[i].length > i2; i2++) {
+                //ctx.beginPath();
+                for (var i3 = 0; mBrot[i][i2].path.length > i3 && mBrot2[i][i2].path.length > i3; i3++) {
+                    //ctx.fillRect(mBrot[i][i2].path[i3].x * 350 * 1.7 + (c.width / 2) * 1.3, mBrot[i][i2].path[i3].y * 350 * 1.7 + (c.height / 2), 1.5, 1.5);
+                    if (Math.sqrt(Math.pow(mBrot[i][i2].path[i3].x, 2) + Math.pow(mBrot[i][i2].path[i3].y, 2)) < 2
+                && Math.sqrt(Math.pow(mBrot[i][i2].path[i3].x - mBrot2[i][i2].path[i3].x, 2) + Math.pow(mBrot[i][i2].path[i3].y - mBrot2[i][i2].path[i3].y, 2)) < 0.25) {
+                        // ctx.lineTo(mBrot[i][i2].path[i3].x * 700 * 1.7 + (c.width / 2) * 1.3, mBrot[i][i2].path[i3].y * 700 * 1.7 + (c.height / 2));
+                        // ctx.lineTo(mBrot[i][i2].path[i3 + 1].x * 700 * 1.7 + (c.width / 2) * 1.3, mBrot[i][i2].path[i3 + 1].y * 700 * 1.7 + (c.height / 2));
+                        ctx.lineWidth = clamp(0.3, 5, 0.01 / Math.sqrt(Math.pow(mBrot[i][i2].path[i3].x - mBrot2[i][i2].path[i3].x, 2) + Math.pow(mBrot[i][i2].path[i3].y - mBrot2[i][i2].path[i3].y, 2)));
+                        ctx.beginPath();
+                        ctx.moveTo(mBrot[i][i2].path[i3].x * 350 * 1.7 + (c.width / 2) * 1.3, mBrot[i][i2].path[i3].y * 350 * 1.7 + (c.height / 2));
+                        ctx.lineTo(mBrot2[i][i2].path[i3].x * 350 * 1.7 + (c.width / 2) * 1.3, mBrot2[i][i2].path[i3].y * 350 * 1.7 + (c.height / 2));
+                        ctx.stroke();
+                    }
+                }
+                //ctx.stroke();
+            }
+        }
+        mBrot2 = mBrot;
+        ctx.fillStyle = "Black";
+        // ctx.globalAlpha = 1;
+        // ctx.fillStyle = "#000000";
+        // ctx.globalAlpha = 0.01;
+        //ctx.fillRect(0, 0, c.width, c.height);
+        ctx.globalAlpha = 0.1;
+        ctx.fillRect(0, 0, c.width, c.height);
+        ctx.globalAlpha = 1;
+        i4++;
+        setTimeout(loop, 0);
+    }
+    loop();
+    </script>
+  </body>
+</html>
+

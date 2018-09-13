@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+  </head>
+  <body>
+    <canvas id="canvas" width="8192" height="8192"></canvas>
+    <script>
+    function mandelbrotRect(x, y, w, h, iterations, resx, resy) {
+        var mData = [];
+        for (var i = 0; resy > i; i++) {
+        mData.push([]);
+            for (var i2 = 0; resx > i2; i2++) {
+                mData[i].push({
+                    iterations: 0,
+                    path: [{ x: 0, y: 0 }],
+                    in: true,
+                    pos: { x: x + i2 * (w / resx), y: y + i * (h / resy) }
+                });
+                for (var i3 = 0; iterations > i3; i3++) {
+                    mData[i][i2].path.push({ 
+                        x: Math.pow(mData[i][i2].path[i3].x, 2) - Math.pow(mData[i][i2].path[i3].y, 2) + mData[i][i2].pos.x,
+                        y: 2 * mData[i][i2].path[i3].x * mData[i][i2].path[i3].y + mData[i][i2].pos.y
+                    });
+                    if (Math.sqrt(Math.pow(mData[i][i2].path[i3 + 1].x, 2) + Math.pow(mData[i][i2].path[i3 + 1].y, 2)) > 2) {
+                        mData[i][i2].in = false;
+                    } else if (mData[i][i2].in) {
+                        mData[i][i2].iterations++;
+                    }
+                }
+            }
+        }
+        return mData;
+    }
+    var il = 0;
+    var c = document.getElementById("canvas");
+    var ctx = c.getContext("2d");
+
+    var rL = 1;
+    function loop() {
+        var mBrot = mandelbrotRect(-2.2, -1.6 + (3.2 / 256) * il, 3.2, 3.2 / 256, 256, 2048, 8);
+        
+        for (var i = 0; mBrot.length > i; i++) {
+            for (var i2 = 0; mBrot[i].length > i2; i2++) {
+                if (mBrot[i][i2].in) {
+                    ctx.fillStyle = "Black";
+                } else {
+                    ctx.fillStyle = "hsl(" + (mBrot[i][i2].iterations * 2 + 180) + ", 50%, " + Math.sqrt(mBrot[i][i2].iterations * (10000 / 64)) + "%)";
+                }
+                for (i3 = i2; mBrot[i].length > i3 && mBrot[i][i3].iterations == mBrot[i][i2].iterations; i3++) {}
+                ctx.fillRect(i2, i + 8 * il, i3 - i2, 1);
+                i2 += i3 - i2 - 1;
+            }
+        }
+        if (il < 256) {
+            il++;
+            setTimeout(loop, 0);
+        }
+    }
+    loop();
+    </script>
+  </body>
+</html>
+
