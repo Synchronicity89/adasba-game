@@ -25,7 +25,7 @@ exports.Player = function(ws, x, y, userID, w, h, map, parent) {
     this.mhp = 1000;
     this.hp = 1000;
     this.inv = [];
-    this.input = { m: { x: 0, y: 0, m: [false, false, false] }, k: [], kD: [], s: 0, cQ: [] };
+    this.input = { m: { x: 0, y: 0, m: [false, false, false] }, k: [], kD: [], s: 0, cQ: [] , mI: [] };
     this.defaultDir = 0;
     this.respondToInput = function() {
         this.delay1--;
@@ -53,6 +53,9 @@ exports.Player = function(ws, x, y, userID, w, h, map, parent) {
                 this.map.getBlockFromCoords(mOff.x, mOff.y).blockType == "air") {
                 this.map.getBlockFromCoords(mOff.x, mOff.y).switchTo(toBlock(this.inv[this.input.s].item));
                 this.addToInv(this.inv[this.input.s].item, -1);
+                if (this.map.getBlockFromCoords(mOff.x, mOff.y).blockType == "belt") {
+                    this.map.getBlockFromCoords(mOff.x, mOff.y).dir = this.defaultDir;
+                }
             }
             if (this.input.kD[82] == true && this.map.getBlockFromCoords(mOff.x, mOff.y).blockType == "belt") {
                 this.defaultDir++;
@@ -71,6 +74,12 @@ exports.Player = function(ws, x, y, userID, w, h, map, parent) {
             }
         }
         this.input.cQ = [];
+        for (var i = 0; this.input.mI.length > i; i++) {
+            if (this.input.mI[i].type == "block") {
+                this.map.getBlock(this.input.mI[i].x, this.input.mI[i].y).changeInv(this.input.mI[i].change);
+            }
+        }
+        this.input.mI = [];
     }
     this.communicate = function(msgToSend) {
         if (this.ws.readyState = this.ws.OPEN) {
@@ -173,10 +182,18 @@ exports.Player = function(ws, x, y, userID, w, h, map, parent) {
 exports.recipes = [
     {
         req: [
-            { item: "wall", quantity: 3 }
+            { item: "stone", quantity: 3 }
         ],
         res: { item: "belt", quantity: 1 },
         name: "belt",
         index: 0
+    },
+    {
+        req: [
+            { item: "stone", quantity: 10 }
+        ],
+        res: { item: "furnace", quantity: 1 },
+        name: "furnace",
+        index: 1
     }
 ];

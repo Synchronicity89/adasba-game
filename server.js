@@ -29,6 +29,9 @@ var Map = require('./map.js').Map;
 //currentmap
 var cmap = require('./currentmap.json');
 
+//map im loading
+var amap = require('./anothermap.json');
+
 //start websocket server
 var WebSocketServer = WebSocket.Server
 wss = new WebSocketServer({port: 42068, //compression stuff stolen from https://github.com/websockets/ws
@@ -49,7 +52,7 @@ wss = new WebSocketServer({port: 42068, //compression stuff stolen from https://
 		clientMaxWindowBits: 10,       // Defaults to negotiated value.
 		serverMaxWindowBits: 10,       // Defaults to negotiated value.
 		// Below options specified as default values.
-		concurrencyLimit: 4,          // Limits zlib concurrency for perf.
+		concurrencyLimit: 7,          // Limits zlib concurrency for perf.
 		threshold: 1024,               // Size (in bytes) below which messages
 									   // should not be compressed.
       } });
@@ -85,9 +88,9 @@ var entities = [];
 var t = new Map(c.mapX, c.mapY, c.tileX, c.tileY, entities);
 
 
-t.doToRect(0, 0, t.w, t.h, function (tile, x, y) {
-    tile.switchTo(bT.unbreakable);
-});
+// t.doToRect(0, 0, t.w, t.h, function (tile, x, y) {
+//     tile.switchTo(bT.unbreakable);
+// });
 
 
 
@@ -100,27 +103,47 @@ t.doToRect(0, 0, t.w, t.h, function (tile, x, y) {
 //     }
 // }
 
-
-
-fCoords = {
-    x: 0,
-    y: 0,
-    w: 4,
-    h: 4  
-};
-
-for (var i = 0; t.h > i; i++) {
-    for (var i2 = 0; t.w > i2; i2++) {
-        var point = { r: (fCoords.w / t.w) * i2 - (fCoords.w / 2) + fCoords.x, i: (fCoords.h / t.h) * i - (fCoords.h / 2) + fCoords.y };
-        var point2 = { r: 0, i: 0 };
-        for (var i3 = 0; 64 > i3; i3++) {
-            point2 = { r: point2.r * point2.r - point2.i * point2.i + point.r, i: 2 * point2.r * point2.i + point.i };
-        }
-        if (func.pythagoras(point2.r, point2.i, 0, 0) < 2) {
-            t.getBlock(i2, i).switchToOverride(bT.air);
+for (var i = 0; amap.length > i; i++) {
+    for (var i2 = 0; amap[i].length > i2; i2++) {
+        t.getBlock(i2, i).blockType = amap[i][i2].blockType;
+        t.getBlock(i2, i).dir = amap[i][i2].dir;
+        t.getBlock(i2, i).hp = amap[i][i2].hp;
+        t.getBlock(i2, i).mhp = amap[i][i2].mhp;
+        t.getBlock(i2, i).ore = amap[i][i2].ore;
+        t.getBlock(i2, i).oreHP = amap[i][i2].oreHP;
+        t.getBlock(i2, i).oreMHP = amap[i][i2].oreMHP;
+        t.getBlock(i2, i).oreQuantity = amap[i][i2].oreQuantity;
+        t.getBlock(i2, i).oreSeed = amap[i][i2].oreSeed;
+        t.getBlock(i2, i).solid = amap[i][i2].solid;
+        //t.getBlock(i2, i).assign(amap[i][i2]);
+        if (amap[i][i2].blockType == "unbreakable") {
+            t.getBlock(i2, i).hp = Infinity;
+            t.getBlock(i2, i).mhp = Infinity;
         }
     }
 }
+
+
+
+// fCoords = {
+//     x: 0,
+//     y: 0,
+//     w: 4,
+//     h: 4  
+// };
+
+// for (var i = 0; t.h > i; i++) {
+//     for (var i2 = 0; t.w > i2; i2++) {
+//         var point = { r: (fCoords.w / t.w) * i2 - (fCoords.w / 2) + fCoords.x, i: (fCoords.h / t.h) * i - (fCoords.h / 2) + fCoords.y };
+//         var point2 = { r: 0, i: 0 };
+//         for (var i3 = 0; 64 > i3; i3++) {
+//             point2 = { r: point2.r * point2.r - point2.i * point2.i + point.r, i: 2 * point2.r * point2.i + point.i };
+//         }
+//         if (func.pythagoras(point2.r, point2.i, 0, 0) < 2) {
+//             t.getBlock(i2, i).switchToOverride(bT.air);
+//         }
+//     }
+// }
 
 
 // var tC = { x: 0, y: 0 };
@@ -155,35 +178,49 @@ for (var i = 0; t.h > i; i++) {
 // } 
 
 
-for (var i = 0; c.mapX * c.mapY / 20 > i; i++) {
-    t.getBlock(Math.floor(Math.random() * (c.mapX - 3) + 1), Math.floor(Math.random() * (c.mapY - 3) + 1)).switchTo(bT.wall);
-}
+// for (var i = 0; c.mapX * c.mapY / 20 > i; i++) {
+//     t.getBlock(Math.floor(Math.random() * (c.mapX - 3) + 1), Math.floor(Math.random() * (c.mapY - 3) + 1)).switchTo(bT.stone);
+// }
 
-for (var i = 0; c.mapX * c.mapY / 600 > i; i++) {
-    var tC = { x: Math.floor(Math.random() * c.mapX), y: Math.floor(Math.random() * c.mapY), r: Math.ceil(Math.random() * 15) }
-    //t.getBlock(Math.floor(Math.random() * c.mapX), Math.floor(Math.random() * c.mapY)).switchToOre(oT.wall, Math.floor(Math.random() * 20));
-    t.doToRect(tC.x - tC.r, tC.y - tC.r, tC.x + tC.r, tC.y + tC.r, function(tile, x, y) {
-        if (Math.random() > func.pythagoras(tC.x, tC.y, x / c.tileX, y / c.tileY) / tC.r) {
-            tile.switchToOre(oT.wall, Math.ceil(5 * tC.r / func.pythagoras(tC.x, tC.y, x / c.tileX, y / c.tileY)));
-        }
-    });
-}
+// for (var i = 0; c.mapX * c.mapY / 120 > i; i++) {
+//     t.getBlock(Math.floor(Math.random() * (c.mapX - 3) + 1), Math.floor(Math.random() * (c.mapY - 3) + 1)).switchTo(bT.iron);
+// }
 
-for (var i = 0; c.mapY > i; i++) {
-    t.getBlock(0, i).switchTo(bT.unbreakable);
-}
+// for (var i = 0; c.mapX * c.mapY / 2400 > i; i++) {
+//     var tC = { x: Math.floor(Math.random() * c.mapX), y: Math.floor(Math.random() * c.mapY), r: Math.ceil(Math.random() * 15) }
+//     //t.getBlock(Math.floor(Math.random() * c.mapX), Math.floor(Math.random() * c.mapY)).switchToOre(oT.stone, Math.floor(Math.random() * 20));
+//     t.doToRect(tC.x - tC.r, tC.y - tC.r, tC.x + tC.r, tC.y + tC.r, function(tile, x, y) {
+//         if (Math.random() > func.pythagoras(tC.x, tC.y, x / c.tileX, y / c.tileY) / tC.r) {
+//             tile.switchToOre(oT.stone, Math.ceil(5 * tC.r / func.pythagoras(tC.x, tC.y, x / c.tileX, y / c.tileY)));
+//         }
+//     });
+// }
 
-for (var i = 0; c.mapY > i; i++) {
-    t.getBlock(c.mapX - 2, i).switchTo(bT.unbreakable);
-}
+// for (var i = 0; c.mapX * c.mapY / 4800 > i; i++) {
+//     var tC = { x: Math.floor(Math.random() * c.mapX), y: Math.floor(Math.random() * c.mapY), r: Math.ceil(Math.random() * 7) }
+//     //t.getBlock(Math.floor(Math.random() * c.mapX), Math.floor(Math.random() * c.mapY)).switchToOre(oT.stone, Math.floor(Math.random() * 20));
+//     t.doToRect(tC.x - tC.r, tC.y - tC.r, tC.x + tC.r, tC.y + tC.r, function(tile, x, y) {
+//         if (Math.random() > func.pythagoras(tC.x, tC.y, x / c.tileX, y / c.tileY) / tC.r) {
+//             tile.switchToOre(oT.iron, Math.ceil(3 * tC.r / func.pythagoras(tC.x, tC.y, x / c.tileX, y / c.tileY)));
+//         }
+//     });
+// }
 
-for (var i = 0; c.mapX > i; i++) {
-    t.getBlock(i, 0).switchTo(bT.unbreakable);
-}
+// for (var i = 0; c.mapY > i; i++) {
+//     t.getBlock(0, i).switchTo(bT.unbreakable);
+// }
 
-for (var i = 0; c.mapX > i; i++) {
-    t.getBlock(i, c.mapY - 2).switchTo(bT.unbreakable);
-}
+// for (var i = 0; c.mapY > i; i++) {
+//     t.getBlock(c.mapX - 2, i).switchTo(bT.unbreakable);
+// }
+
+// for (var i = 0; c.mapX > i; i++) {
+//     t.getBlock(i, 0).switchTo(bT.unbreakable);
+// }
+
+// for (var i = 0; c.mapX > i; i++) {
+//     t.getBlock(i, c.mapY - 2).switchTo(bT.unbreakable);
+// }
 
 
 
@@ -209,7 +246,7 @@ wss.on('connection', function (ws) {
         }
         if (func.isJSON(message)) {
             var msg = JSON.parse(message);
-            if (msg.type != "inputName") {
+            if (msg.type != "inputName" && clients[ws.userID] != undefined) {
                 clients[ws.userID].input = func.cBV(msg);
             } else {
                 if (msg.name.length < 64) {
@@ -278,6 +315,21 @@ function loop() {
             entities.splice(i, 1);
             i--;
         }
+    }
+    if (li % 1200 == 0) {
+        console.log("Starting Save!");
+        var gimme = [];
+        for (var i = 0; t.h > i; i++) {
+            gimme.push([]);
+            for (var i2 = 0; t.w > i2; i2++) {
+                gimme[i].push(t.getBlock(i2, i).getData());
+            }
+        }
+        fs.writeFile('./anothermap.json', JSON.stringify(gimme), function() {
+            console.log("World Saved!");
+        });
+        //ws.send(JSON.stringify(gimme));
+
     }
 }
 setInterval(loop, 1000 / 60);

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <script>
+            var ctx = new AudioContext();
+            var o = ctx.createOscillator();
+            o.type = "sine";
+            var  g = ctx.createGain();
+            o.connect(g);
+            o.connect(ctx.destination);
+            o.start();
+            o.frequency.value = 200;
+            var lc = 0;
+            
+            function pianoKey(key) {
+                return 300 * Math.pow(2, key / 12);
+            }
+            
+
+            function loop() {
+                lc++;
+                //o.frequency.value = Math.sin(lc / 10) * 100 + 300;
+                o.frequency.value = pianoKey(0);
+                requestAnimationFrame(loop);
+            }
+            loop();
+        </script>
+    </body>
+</html>

@@ -31,7 +31,7 @@ var styles = {
             ctx.strokeRect(msg.players[i].x - 15, msg.players[i].y - 15, 30, 30);
         }
         for (var i = 0; msg.map.length > i; i++) {
-            if (msg.map[i].blockType == "wall") {
+            if (msg.map[i].blockType == "stone") {
                 ctx.strokeStyle = "hsl(" + (10 * (msg.map[i].x + msg.map[i].y + rLC / 10)) + ", 100%, 70%)";
                 ctx.fillRect(msg.map[i].x * config.tX, msg.map[i].y * config.tY, config.tX, config.tY)
                 ctx.strokeRect(msg.map[i].x * config.tX, msg.map[i].y * config.tY, config.tX, config.tY);
@@ -56,7 +56,7 @@ var styles = {
             ctx.fillRect(msg.players[i].x - 15, msg.players[i].y - 15, 30, 30);
         }
         for (var i = 0; msg.map.length > i; i++) {
-            if (msg.map[i].blockType == "wall") {
+            if (msg.map[i].blockType == "stone") {
                 ctx.fillRect(msg.map[i].x * config.tX, msg.map[i].y * config.tY, config.tX, config.tY)
             }
         }
@@ -80,7 +80,7 @@ var styles = {
             ctx.fillRect(msg.players[i].x - 15, msg.players[i].y - 15, 30, 30);
         }
         for (var i = 0; msg.map.length > i; i++) {
-            if (msg.map[i].blockType == "wall") {
+            if (msg.map[i].blockType == "stone") {
                 ctx.fillRect(msg.map[i].x * config.tX, msg.map[i].y * config.tY, config.tX, config.tY)
             }
         }
@@ -115,7 +115,7 @@ var styles = {
             ctx.strokeRect(msg.players[i].x - 15, msg.players[i].y - 15, 30, 30);
         }
         for (var i = 0; msg.map.length > i; i++) {
-            if (msg.map[i].blockType == "wall") {
+            if (msg.map[i].blockType == "stone") {
         ctx.fillStyle = "lightgray"
                 ctx.strokeStyle = "#848484";
                 ctx.fillRect(msg.map[i].x * config.tX, msg.map[i].y * config.tY, config.tX, config.tY)

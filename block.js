@@ -22,6 +22,7 @@ exports.Block = function (x, y, map, entities) {
             this.mhp = type.mhp;
             this.hp = type.mhp;
             this.solid = type.solid;
+            this.inv = type.inv;
         }
     }
     this.switchToOverride = function(type) {
@@ -29,6 +30,7 @@ exports.Block = function (x, y, map, entities) {
         this.mhp = type.mhp;
         this.hp = type.mhp;
         this.solid = type.solid;
+        this.inv = type.inv;
     }
     this.switchToOre = function(type, quantity) {
         this.ore = type.oreType;
@@ -74,6 +76,27 @@ exports.Block = function (x, y, map, entities) {
     this.oreMHP = 0;
     this.oreSeed = func.cBV(Math.random());
     this.dir = 0;
+    this.inv = undefined;
+    this.changeInv = function(invChange) {
+        if (this.inv != undefined) {
+            for (var i = 0; invChange.length > i; i++) {
+                for (var i2 = 0; this.inv.length > i2; i2++) {
+                    if (invChange[i].name == this.inv[i2].name) {
+                        if (invChange[i].item == this.inv[i2].item) {
+                            this.inv[i2].quantity += invChange[i].quantity;
+                            if (this.inv[i2].quantity <= 0) {
+                                this.inv[i2].quantity = 0;
+                                this.inv[i2].item = "none"
+                            }
+                        }
+                    } else if (this.inv[i2].item == "none") {
+                        this.inv[i2].quantity += invChange[i].quantity;
+                        this.inv[i2].item = invChange[i].item;
+                    }
+                }
+            }
+        }
+    }
 }
 
 exports.blockTypes = {
@@ -82,20 +105,42 @@ exports.blockTypes = {
         mhp: 0,
         solid: false
     },
-    wall: {
-        blockType: "wall",
-        mhp: 30,
+    stone: {
+        blockType: "stone",
+        mhp: 20,
         solid: true
     },
     belt: {
         blockType: "belt",
-        mhp: 75,
+        mhp: 40,
         solid: false
     },
     unbreakable: {
         blockType: "unbreakable",
         mhp: Infinity,
         solid: true
+    },
+    iron: {
+        blockType: "iron",
+        mhp: 30,
+        solid: true
+    },
+    furnace: {
+        blockType: "furnace",
+        mhp: 100,
+        solid: true,
+        inv: [
+            {
+                name: "smelt",
+                item: "none",
+                quantity: 0
+            },
+            {
+                name: "fuel",
+                item: "none",
+                quantity: 0
+            }
+        ]
     }
 };
 
@@ -104,14 +149,20 @@ exports.toBlock = function(str) {
         case "air":
             return exports.blockTypes.air;
             break;
-        case "wall":
-            return exports.blockTypes.wall;
+        case "stone":
+            return exports.blockTypes.stone;
             break;
         case "belt":
             return exports.blockTypes.belt;
             break;
         case "unbreakable":
             return exports.blockTypes.unbreakable;
+            break;
+        case "iron":
+            return exports.blockTypes.iron;
+            break;
+        case "furnace":
+            return exports.blockTypes.furnace;
             break;
     }
 }
@@ -121,8 +172,12 @@ exports.oreTypes = {
         oreType: "air",
         mhp: 0
     },
-    wall: {
-        oreType: "wall",
+    stone: {
+        oreType: "stone",
         mhp: 15
+    },
+    iron: {
+        oreType: "iron",
+        mhp: 25
     }
 }

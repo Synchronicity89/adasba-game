@@ -1,5 +1,5 @@
 //contains all input
-var input = { m: { x: 0, y: 0, m: [false, false, false] }, k: [], kD: [], s: 0, cQ: [] };
+var input = { m: { x: 0, y: 0, m: [false, false, false] }, k: [], kD: [], s: 0, cQ: [], mI: [] };
 
 //fill key array with keys
 for (var i = 0; 256 > i; i++) {
@@ -17,7 +17,7 @@ document.addEventListener('mousedown', function(e) {
     input.m.m[e.which - 1] = true;
     if (msg.players.length > 0) {
         for (var i = 0; msg.players[msg.you].craftable.length > i; i++) {
-            if (inRect(c.width - 100 + i * 100, 250 + i * 100, 100, 100, input.m.x, input.m.y)) {
+            if (inRect(c.width - 100, 250 + i * 100, 100, 100, input.m.x, input.m.y)) {
                 input.cQ.push(msg.players[msg.you].craftable[i].index);
             }
         }
@@ -50,6 +50,7 @@ function inputLoop() {
     //input.cQ.push(0);
     ws.send(JSON.stringify(input));
     input.cQ = [];
+    input.mI = [];
     for (var i = 0; input.kD.length > i; i++) {
         if (input.kD[i]) {
             input.kD[i] = 2;

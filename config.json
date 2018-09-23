@@ -10,11 +10,15 @@
     "startInv": [
         {
             "item": "belt",
-            "quantity": 25
+            "quantity": 2500
         },
         {
-            "item": "wall",
-            "quantity": 50
+            "item": "stone",
+            "quantity": 5000
+        },
+        {
+            "item": "iron",
+            "quantity": 2500
         }
     ]
 }

@@ -49,10 +49,16 @@ function drawLoop() {
 
     ctx.lineWidth = 12;
     for (var i = 0; msg.map.length > i; i++) {
-        if (msg.map[i].ore == "wall") {
+        if (msg.map[i].ore == "stone") {
             seed = msg.map[i].oreSeed;
             for(i2=0;i2<Math.sqrt(msg.map[i].oreQuantity * 2);i2++){
             ctx.drawImage(assets.wallOre, msg.map[i].x * config.tX+(random()*config.tX-config.tX/3.5), msg.map[i].y * config.tY+(random()*config.tY-config.tY/3.5));
+            }
+        }
+        if (msg.map[i].ore == "iron") {
+            seed = msg.map[i].oreSeed;
+            for(i2=0;i2<Math.sqrt(msg.map[i].oreQuantity * 2);i2++){
+            ctx.drawImage(assets.blueOre, msg.map[i].x * config.tX+(random()*config.tX-config.tX/3.5), msg.map[i].y * config.tY+(random()*config.tY-config.tY/3.5));
             }
         }
     }
@@ -65,19 +71,15 @@ function drawLoop() {
     
 
     for (var i = 0; msg.map.length > i; i++) {
-        if (msg.map[i].blockType == "wall") {
-            ctx.drawImage(assets.wall, msg.map[i].x * config.tX - 6, msg.map[i].y * config.tY - 6);
-        }
-        if (msg.map[i].blockType == "unbreakable") {
-            ctx.drawImage(assets.unbreakable, msg.map[i].x * config.tX - 6, msg.map[i].y * config.tY - 6);
-        }
+        tileFromString(msg.map[i].blockType, ctx, msg.map[i].x * config.tX - 6, msg.map[i].y * config.tY - 6, false, msg.map[i].dir);
     }
 
-    connect('wall', "lightgray", ctx);
+    connect('stone', "lightgray", ctx);
     connect('unbreakable', "#444444", ctx);
+    connect('iron', "#99BEFF", ctx);
 
     for (var i = 0; msg.entities.length > i; i++) {
-        if (msg.entities[i].subType == "wall") {
+        if (msg.entities[i].subType == "stone") {
             ctx.fillStyle = "lightgray"
             ctx.strokeStyle = "#848484";
             // ctx.save();
@@ -85,7 +87,7 @@ function drawLoop() {
             // ctx.fillRect(-config.tX / 4, -config.tY / 4, config.tX / 2, config.tY / 2)
             // ctx.strokeRect(-config.tX / 4, -config.tY / 4, config.tX / 2, config.tY / 2);
             // ctx.restore();
-            ctx.drawImage(assets.wall, msg.entities[i].x -config.tX / 4 - 3, msg.entities[i].y -config.tY / 4 - 3, config.tX / 2 + 6, config.tY / 2 + 6);
+            ctx.drawImage(assets.stone, msg.entities[i].x -config.tX / 4 - 3, msg.entities[i].y -config.tY / 4 - 3, config.tX / 2 + 6, config.tY / 2 + 6);
         }
         if (msg.entities[i].subType == "belt") {
             ctx.fillStyle = "lightgray"
@@ -117,14 +119,8 @@ function drawLoop() {
             ctx.lineTo(truncate(msg.players[i].input.m.x + msg.players[i].x - c.width / 2, config.tX) + config.tX / 2, truncate(msg.players[i].input.m.y + msg.players[i].y - c.height / 2, config.tY) + config.tY / 2);
             ctx.stroke();
         }
-        ctx.lineWidth = 9;
-        ctx.strokeStyle = "#333333";
-        ctx.font = "24px Courier New";
-        ctx.textAlign = "center"
-        ctx.strokeText(msg.players[i].name, msg.players[i].x, msg.players[i].y - config.pX / 2 - 10);
-        ctx.strokeStyle = "#CCCCCC";
-        ctx.lineWidth = 2;
-        ctx.strokeText(msg.players[i].name, msg.players[i].x, msg.players[i].y - config.pX / 2 - 10);
+        ctx.textAlign = "center";
+        defaultText(msg.players[i].name, msg.players[i].x, msg.players[i].y - config.pX / 2 - 10, ctx);
     }
 
     if (msg.players.length > 0) {
@@ -173,24 +169,16 @@ function drawLoop() {
         for (var i = 0; msg.players[msg.you].inv.length > i; i++) {
             ctx.save();
             ctx.translate(c.width / 2 + 75 * i - 75 * input.s, c.height - 60);
-            if (msg.players[msg.you].inv[i].item == "wall") {
-                ctx.lineWidth = 12;
-                ctx.fillStyle = "lightgray"
-                ctx.strokeStyle = "#848484";
-                ctx.fillRect(-25, -25, 50, 50);
-                ctx.strokeRect(-25, -25, 50, 50);
-            }
-            if (msg.players[msg.you].inv[i].item == "belt") {
-                ctx.fillStyle = "lightgray"
-                ctx.strokeStyle = "#608dff";
-                ctx.fillRect(-config.tX / 4, -config.tY / 4, config.tX / 2, config.tY / 2)
-                ctx.strokeRect(-config.tX / 4, -config.tY / 4, config.tX / 2, config.tY / 2);
-                ctx.beginPath();
-                ctx.moveTo(-config.tX / 4 + config.tX / 6, -config.tY / 4 + 5 * config.tY / 16);
-                ctx.lineTo(-config.tX / 4 + config.tX / 4, -config.tY / 4 + 3 * config.tY / 16);
-                ctx.lineTo(-config.tX / 4 + 2 * config.tX / 6, -config.tY / 4 + 5 * config.tY / 16);
-                ctx.stroke();
-            }
+            // if (msg.players[msg.you].inv[i].item == "stone") {
+            //     ctx.drawImage(assets.stone, -25, -25, 50, 50);
+            // }
+            // if (msg.players[msg.you].inv[i].item == "belt") {
+            //     ctx.drawImage(assets.belt, -25, -25, 50, 50);
+            // }
+            // if (msg.players[msg.you].inv[i].item == "iron") {
+            //     ctx.drawImage(assets.iron, -25, -25, 50, 50);
+            // }
+            tileFromString(msg.players[msg.you].inv[i].item, ctx, -31, -31, true);
             ctx.lineWidth = 9;
             ctx.strokeStyle = "#333333";
             ctx.font = "24px Courier New";
@@ -213,6 +201,7 @@ function drawLoop() {
     ctx.fillStyle = "#00000044";
     ctx.fillRect(c.width - 100, 250, 100, c.height - 350);
 
+    ctx.textAlign = "center";
     if (msg.players.length > 0) {
         for (var i = 0; msg.players[msg.you].craftable.length > i; i++) {
             ctx.save();
@@ -220,37 +209,16 @@ function drawLoop() {
             if (msg.players[msg.you].craftable[i].res.item == "belt") {
                 ctx.drawImage(assets.belt, 19, 19, 62, 62);
             }
-            ctx.lineWidth = 9;
-            ctx.strokeStyle = "#333333";
-            ctx.font = "24px Courier New";
-            ctx.textAlign = "center"
-            ctx.strokeText(msg.players[msg.you].craftable[i].res.quantity, 50, 56);
-            ctx.strokeStyle = "#CCCCCC";
-            ctx.lineWidth = 2;
-            ctx.strokeText(msg.players[msg.you].craftable[i].res.quantity, 50, 56);
-            if (inRect(c.width - 100 + i * 100, 250 + i * 100, 100, 100, input.m.x, input.m.y)) {
+            defaultText(msg.players[msg.you].craftable[i].res.quantity, 50, 56, ctx);
+            if (inRect(c.width - 100, 250 + i * 100, 100, 100, input.m.x, input.m.y)) {
                 ctx.fillRect(0, 0, msg.players[msg.you].craftable[i].req.length * -100 - 127, 100);
                 for (var i2 = 0; msg.players[msg.you].craftable[i].req.length > i2; i2++) {
-                    if (msg.players[msg.you].craftable[i].req[i2].item == "wall") {
-                        ctx.drawImage(assets.wall, -81 - 100 * i, 19, 62, 62);
+                    if (msg.players[msg.you].craftable[i].req[i2].item == "stone") {
+                        ctx.drawImage(assets.stone, -81 - 100 * i2, 19, 62, 62);
                     }
-                    ctx.lineWidth = 9;
-                    ctx.strokeStyle = "#333333";
-                    ctx.font = "24px Courier New";
-                    ctx.textAlign = "center"
-                    ctx.strokeText(msg.players[msg.you].craftable[i].req[i2].quantity, -50 + -100 * i, 56);
-                    ctx.strokeStyle = "#CCCCCC";
-                    ctx.lineWidth = 2;
-                    ctx.strokeText(msg.players[msg.you].craftable[i].req[i2].quantity, -50 + -100 * i, 56);
+                    defaultText(msg.players[msg.you].craftable[i].req[i2].quantity, -50 + -100 * i2, 56, ctx);
                 }
-                ctx.lineWidth = 9;
-                ctx.strokeStyle = "#333333";
-                ctx.font = "24px Courier New";
-                ctx.textAlign = "center"
-                ctx.strokeText("Requires:", msg.players[msg.you].craftable[i].req.length * -100 - 50, 56);
-                ctx.strokeStyle = "#CCCCCC";
-                ctx.lineWidth = 2;
-                ctx.strokeText("Requires:", msg.players[msg.you].craftable[i].req.length * -100 - 50, 56);
+                defaultText("Requires:", msg.players[msg.you].craftable[i].req.length * -100 - 50, 56, ctx);
             }
             ctx.restore();
         }
@@ -260,14 +228,8 @@ function drawLoop() {
     // ctx.strokeStyle = "rgba(100, 100, 100, " + ((100 - Math.abs(pythagoras(input.m.x, input.m.y, c.width / 2, c.height / 2) - 300)) / 200) + ")";
     // ctx.arc(c.width / 2, c.height / 2, 300, 0, Math.PI * 2);
     // ctx.stroke();
-    ctx.lineWidth = 9;
-    ctx.strokeStyle = "#333333";
-    ctx.font = "24px Courier New";
     ctx.textAlign = "left";
-    ctx.strokeText("Websocket Delay Interval: " + webSocketDelay + " ms", 20, 1060);
-    ctx.strokeStyle = "#CCCCCC";
-    ctx.lineWidth = 2;
-    ctx.strokeText("Websocket Delay Interval: " + webSocketDelay + " ms", 20, 1060);
+    defaultText("Websocket Delay Interval: " + webSocketDelay + " ms", 20, 1060, ctx);
     requestAnimationFrame(drawLoop);
 }
 drawLoop();
