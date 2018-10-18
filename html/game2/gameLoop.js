@@ -53,7 +53,7 @@ function PlayerBullet(x, y, dx, dy, dmg, hitbox, life) {
 
 
 
-function EnemyBullet(x, y, dx, dy, dmg, hitbox, life, f) {
+function EnemyBullet(x, y, dx, dy, dmg, hitbox, life, f, shouldWrap) {
     this.x = x;
     this.y = y;
     this.type = "EnemyBullet";
@@ -64,6 +64,10 @@ function EnemyBullet(x, y, dx, dy, dmg, hitbox, life, f) {
     this.px = x;
     this.py = y;
     this.life = life;
+    this.wrap = true;
+    if (shouldWrap == false) {
+        this.wrap = false;
+    }
     if (f != undefined) {
         this.f = f;
     } else {
@@ -76,7 +80,9 @@ function EnemyBullet(x, y, dx, dy, dmg, hitbox, life, f) {
         this.y += this.dy;
         this.f();
         this.life--;
-        wrap(this);
+        if (this.wrap) {
+            wrap(this);
+        }
     }
     this.draw = function(cx) {
         cx.beginPath();
@@ -103,8 +109,8 @@ function BasicEnemy() {
         this.dy += Math.sin(targetPlayer(this.x, this.y));
         this.x += this.dx;
         this.y += this.dy;
-        this.dx *= 0.99;
-        this.dy *= 0.99;
+        this.dx *= 0.98;
+        this.dy *= 0.98;
         this.timer++;
         if (Math.random() > 0.9) {
             o.push(new Particle(this.x, this.y, this.dx * -1 + Math.random() * 3 - 1.5, this.dy * -1 + Math.random() * 3 - 1.5, "grav", Math.random() * 15, Math.random() * 50 + 50));
@@ -388,24 +394,24 @@ function gameLoop() {
 
     p.poslog.push({ x: p.x, y: p.y, dx: p.dx, dy: p.dy });
 
-    if (p.poslog.length > pyth(p.dx, p.dy) * 2.5) {
+    if (p.poslog.length > pyth(p.dx, p.dy) * 2) {
         p.poslog.splice(0, 2);
     }
 
     if (k[87]) {
-        p.dy--;
+        p.dy -= 2;
     }
 
     if (k[83]) {
-        p.dy++;
+        p.dy += 2;
     }
 
     if (k[65]) {
-        p.dx--;
+        p.dx -= 2;
     }
 
     if (k[68]) {
-        p.dx++;
+        p.dx += 2;
     }
 
     if (mD[0] && p.i < 0) {

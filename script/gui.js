@@ -3,6 +3,7 @@ var guiWindows = {
         type: "furnace",
         w: 300,
         h: 300,
+        pInv: true,
         icons: [
             {
                 x: 50,

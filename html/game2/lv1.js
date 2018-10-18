@@ -113,7 +113,7 @@ var lv1 = {
             end: 400,
             f: function() {
                 if (lc % 150 == 0) {
-                    o.push(new Enemy(500, 500, 0, 0, new ProjectileEnemy()))
+                    o.push(new Enemy(0, 540, 0, 0, new ProjectileEnemy()))
                 }
             }
         },
@@ -123,8 +123,6 @@ var lv1 = {
             f: function() {
                 if (enemies()) {
                     lc--;
-                } else {
-                    console.log("a");
                 }
             }
         },
@@ -178,6 +176,79 @@ var lv1 = {
             f: function() {
                 for (var i = 0; 10 > i; i++) {
                     o.push(new Enemy(1920, 54 + i * 108, 0, 0, new BasicEnemy()));
+                }
+            }
+        },
+        {
+            start: 451,
+            end: 451,
+            f: function() {
+                if (enemies()) {
+                    lc--;
+                }
+            }
+        },
+        {
+            start: 452,
+            end: 452,
+            f: function() {
+                for (var i = 0; 3 > i; i++) {
+                    o.push(new Enemy(1920, 54 + i * 108, 0, 0, new ProjectileEnemy()));
+                }
+            }
+        },
+        {
+            start: 453,
+            end: 453,
+            f: function() {
+                if (enemies()) {
+                    lc--;
+                }
+            }
+        },
+        {
+            start: 453,
+            end: 453,
+            f: function() {
+                o.push(new MsgBox(20, 20, [
+                    "I've picked up on something, but it's a bit of a distance away.",
+                    "You'll have to continue fighting until we get to it."
+                ], 454));
+            } 
+        },
+        {
+            start: 454,
+            end: 454,
+            f: function() {
+                if (kD[13] != true) {
+                    lc--;
+                }
+            }
+        },
+        {
+            start: 500,
+            end: 2000,
+            f: function() {
+                if (lc % 5 == 0) {
+                    o.push(new EnemyBullet(960 + Math.cos(lc / 50) * 1500, 540 + Math.sin(lc / 50) * 1500, Math.cos(lc / 50) * -50, Math.sin(lc / 50) * -50, 15, 5, 70, undefined, false));
+                }
+            }
+        },
+        {
+            start: 500,
+            end: 2000,
+            f: function() {
+                if (lc % 400 == 0) {
+                    o.push(new Enemy(960 + Math.cos(lc / 50 + Math.PI / 2) * 1500, 540 + Math.sin(lc / 50 + Math.PI / 2) * 1500, 0, 0, new BasicEnemy()));
+                }
+            }
+        },
+        {
+            start: 1250,
+            end: 2000,
+            f: function() {
+                if (lc % 5 == 0) {
+                    o.push(new EnemyBullet(960 + Math.cos(lc / 50 + Math.PI / 2) * 1500, 540 + Math.sin(lc / 50 + Math.PI / 2) * 1500, Math.cos(lc / 50 + Math.PI / 2) * -50, Math.sin(lc / 50 + Math.PI / 2) * -50, 15, 5, 70, undefined, false));
                 }
             }
         }

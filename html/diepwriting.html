@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            canvas {
+                position:absolute;
+                top:0px;
+                left:0px;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas width="1920" height="1080" id="canvas"></canvas>
+        <script>
+            const tau = Math.PI * 2;
+            
+            //canvas
+            var c = document.getElementById("canvas");
+            var ctx = c.getContext("2d");
+            
+            
+            //mouse position
+            var m = { x: 960, y: 540 };
+
+            //mouse pos event listener
+            c.addEventListener("mousemove", function(e) {
+                m = { x: e.clientX, y: e.clientY };
+            }, false);
+
+
+
+            //whether mouse is down or not
+            var mD = [false, false, false];
+
+            //mouse down event listener
+            c.addEventListener("mousedown", function(e) {
+                mD[e.which - 1] = true;
+            }, false);
+
+            //mouse up event listener
+            c.addEventListener("mouseup", function(e) {
+                mD[e.which - 1] = false;
+            }, false);
+
+
+
+            //contains all keys
+            var k = [];
+            //var kD = [];
+
+            //key down event listener
+            document.addEventListener("keydown", function(e) {
+                k[e.keyCode] = true;
+                // if (k[e.keyCode] == false) {
+                //     kD[e.keyCode] = true; 
+                // }
+            }, false);
+
+            //key up event listener
+            document.addEventListener("keyup", function(e) {
+                k[e.keyCode] = false;
+                //kD[e.keyCode] = true;
+            }, false);
+            
+            
+            //diep circle
+            function dCircle(x, y, r, scheme, context) {
+                if (context == undefined) {
+                    scheme.set();
+                    ctx.beginPath();
+                    ctx.arc(x, y, r, 0, Math.PI * 2);
+                    ctx.lineWidth = 4;
+                    ctx.fill();
+                    ctx.stroke();
+                } else {
+                    scheme.set(context);
+                    context.beginPath();
+                    context.arc(x, y, r, 0, Math.PI * 2);
+                    context.lineWidth = 4;
+                    context.fill();
+                    context.stroke();
+                }
+            }
+            
+            //diep barrel
+            function dBarrel(x, y, width, height, xOffset, yOffset, dir, scheme) {
+                scheme.set();
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(dir);
+                ctx.beginPath();
+                ctx.moveTo(yOffset, width / -2 + xOffset);
+                ctx.lineTo(height + yOffset, width / -2 + xOffset);
+                ctx.lineTo(height + yOffset, width / 2 + xOffset);
+                ctx.lineTo(yOffset, width / 2 + xOffset);
+                ctx.closePath();
+                ctx.lineWidth = 4;
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            //diep trap
+            function dTrap(x, y, size, dir, scheme, context) {
+                if (context == undefined) {
+                    scheme.set();
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(dir);
+                    ctx.beginPath();
+                    for (var ii = 0; 3 > ii; ii++) {
+                        ctx.lineTo(Math.cos(tau / 6 * ii * 2 + dir) * size, Math.sin(tau / 6 * ii * 2 + dir) * size);
+                        ctx.lineTo(Math.cos(tau / 6 * (ii * 2 + 1) + dir) * size * 0.4, Math.sin(tau / 6 * (ii * 2 + 1) + dir) * size * 0.4);
+                    }
+                    ctx.closePath();
+                    ctx.lineWidth = 4;
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+                } else {
+                    scheme.set(context);
+                    context.save();
+                    context.translate(x, y);
+                    context.rotate(dir);
+                    context.beginPath();
+                    for (var ii = 0; 3 > ii; ii++) {
+                        context.lineTo(Math.cos(tau / 6 * ii * 2 + dir) * size, Math.sin(tau / 6 * ii * 2 + dir) * size);
+                        context.lineTo(Math.cos(tau / 6 * (ii * 2 + 1) + dir) * size * 0.4, Math.sin(tau / 6 * (ii * 2 + 1) + dir) * size * 0.4);
+                    }
+                    context.closePath();
+                    context.lineWidth = 4;
+                    context.fill();
+                    context.stroke();
+                    context.restore();
+                }
+            }
+
+            //health bar
+            function hBar(obj) {
+                ctx.beginPath();
+                ctx.moveTo(obj.x - obj.r * 1.2, obj.y + obj.r + 12);
+                ctx.lineTo(obj.x + obj.r * 1.2, obj.y + obj.r + 12);
+                ctx.strokeStyle = "#565656";
+                ctx.lineWidth = 10;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(obj.x - obj.r * 1.2, obj.y + obj.r + 12);
+                ctx.lineTo(obj.x - obj.r * 1.2 + obj.r * 2.4 * (obj.hp / obj.mhp), obj.y + obj.r + 12);
+                ctx.strokeStyle = "#78E482";
+                ctx.lineWidth = 6;
+                ctx.stroke();
+            }
+
+            //polygon
+            function polygon(x, y, sides, radius, offset) {
+                for (var ii = 0; sides > ii; ii++) {
+                    ctx.lineTo(x + Math.cos(tau / sides * ii + offset) * radius, y + Math.sin(tau / sides * ii + offset) * radius);
+                }
+            }
+
+            function dText(text, x, y, size) {
+                ctx3.strokeStyle = "#565656";
+                ctx3.fillStyle = "#FFFFFF";
+                ctx3.lineWidth = 4;
+                if (size == undefined) {
+                    ctx3.font = "18px Ubuntu";
+                } else {
+                    ctx3.font = size + "px Ubuntu";
+                }
+                ctx3.strokeText(text, x, y);
+                ctx3.fillText(text, x, y);
+            }
+
+            //color schemes
+            function cScheme(center, border) {
+                this.center = center;
+                this.border = border;
+                this.set = function(context) {
+                    if (context == undefined) {
+                        ctx.fillStyle = this.center;
+                        ctx.strokeStyle = this.border;
+                    } else {
+                        context.fillStyle = this.center;
+                        context.strokeStyle = this.border;
+                    }
+                }
+            }
+
+            //offsets stuff
+            function offset(obj, x, y, dir) {
+                if (dir == undefined) {
+                    return { x: Math.cos(obj.dir + tau / 4) * x + Math.cos(obj.dir) * y, y: Math.sin(obj.dir + tau / 4) * x + Math.sin(obj.dir) * y };
+                } else {
+                    return { x: Math.cos(obj.dir + tau / 4 + dir) * x + Math.cos(obj.dir + dir) * y, y: Math.sin(obj.dir + tau / 4 + dir) * x + Math.sin(obj.dir + dir) * y };
+                }
+            }
+            
+            //diep blue color scheme
+            var diepBlue = new cScheme("#00AFDE", "#0083A5");
+
+            //diep grey color scheme
+            var diepGrey = new cScheme("#989898", "#717171");
+
+            //diep red color scheme
+            var diepRed = new cScheme("#F55057", "#B63D43");
+
+            //make bullet
+            function bullet(x, y, dir, v, draw, hp, side, r, dmg, dmgSpd) {
+                this.type = "bullet";
+                this.x = x;
+                this.y = y;
+                this.dir = dir;
+                this.v = v;
+                this.draw = draw;
+                this.hp = hp;
+                this.side = side;
+                this.r = r;
+                this.dmg = dmg;
+                this.dmgSpd = dmgSpd;
+                this.move = function() {
+                    this.x += Math.cos(this.dir) * this.v;
+                    this.y += Math.sin(this.dir) * this.v;
+                    this.hp--;
+                }
+                this.collide = function(target) {
+                    if (dist(target.x, target.y, this.x, this.y) < this.r + target.r) {
+                        if (this.side != target.side) {
+                            this.dmg -= this.dmgSpd;
+                            target.hp -= this.dmgSpd;
+                        } else {
+                            if (this.type == "tank" && target.type == "tank") {
+                                this.dx += Math.cos(Math.atan2(this.y - target.y, this.x - target.x)) * -5;
+                                this.dy += Math.sin(Math.atan2(this.y - target.y, this.x - target.x)) * -5;
+                            }
+                        }
+                    }
+                    if (this.dmg <= 0) {
+                        this.hp = -1;
+                    }
+                }
+            }
+
+
+
+
+
+
+            
+            var p = { 
+                x: 960, 
+                y: 540, 
+                dx: 0, 
+                dy: 0,
+                r: 64,
+                d: 0
+            };
+            
+
+            var b = [];
+
+            var manifesto = "";
+            var client = new XMLHttpRequest();
+            client.open('GET', 'http://50.39.110.171:42069/html/communistmanifesto.txt');
+            client.onreadystatechange = function() {
+                manifesto = client.responseText;
+            }
+            client.send();
+
+            var pr = document.createElement("canvas");
+            var print = pr.getContext("2d");
+            pr.width = 850;
+            pr.height = 10;
+            print.fillStyle = "White";
+            print.fillRect(0, 0, pr.width, pr.height);
+            print.fillStyle = "Black";
+            print.fillText("Somebody once told me the world is gonna roll me, I ain't the sharpest tool in the shed. She was looking kinda dumb with her finger and her thumb in the shape of an L on her forehead.", 10, 8);
+            var data = print.getImageData(0, 0, pr.width, pr.height).data;
+
+            var layer = pr.width;
+            
+            var smallCircle = document.createElement("canvas");
+            var smCTX = smallCircle.getContext("2d");
+            smallCircle.width = 20;
+            smallCircle.height = 20;
+            dCircle(10, 10, 7, diepBlue, smCTX);
+
+            function loop() {
+                ctx.clearRect(0, 0, c.width, c.height);
+                if (k[87]) {
+                    p.dy--;
+                }
+                if (k[83]) {
+                    p.dy++;
+                }
+                if (k[65]) {
+                    p.dx--;
+                }
+                if (k[68]) {
+                    p.dx++;
+                }
+                p.x += p.dx;
+                p.y += p.dy;
+                p.dx *= 0.95;
+                p.dy *= 0.95;
+                p.dir = Math.atan2(m.y - p.y, m.x - p.x);
+                if (p.x > c.width) {
+                    p.x = 0;
+                }
+                if (p.x < 0) {
+                    p.x = c.width;
+                }
+                if (p.y > c.height) {
+                    p.y = 0;
+                }
+                if (p.y < 0) {
+                    p.y = c.height;
+                }
+                if (mD[0]) {
+                    for (var i = 0; pr.height > i; i++) {
+                        if (data[(i * pr.width + layer) * 4] < 200) {
+                            b.push(new bullet(p.x + offset(p, 100 / pr.height * i - 50, 0).x, p.y + offset(p, 100 / pr.height * i - 50, 0).y, p.dir, 8, function() {
+                                ctx.drawImage(smallCircle, this.x - 10, this.y - 10);
+                            }, 450, 0, 0, 0, 0));
+                        }
+                    }
+                    layer--;
+                    if (layer < 0) {
+                        layer = pr.width;
+                    }
+                } 
+                
+                b.forEach(function(e) {
+                    e.draw();
+                    e.move();
+                    if (e.x > c.width) {
+                        e.x = 0;
+                    }
+                    if (e.x < 0) {
+                        e.x = c.width;
+                    }
+                    if (e.y > c.height) {
+                        e.y = 0;
+                    }
+                    if (e.y < 0) {
+                        e.y = c.height;
+                    }
+                });
+                b.forEach(function(e, i) {
+                    if (e.hp < 0) {
+                        b.splice(i, 1);
+                    }
+                });
+                ctx.drawImage(pr, 0, 0);
+                dBarrel(p.x, p.y, 110, 100, 0, 0, p.dir, diepGrey);
+                dCircle(p.x, p.y, p.r, diepBlue);
+
+                requestAnimationFrame(loop);
+            }
+            loop();
+        </script>
+    </body>
+</html>

@@ -317,7 +317,7 @@ function loop() {
         }
     }
     if (li % 1200 == 0) {
-        console.log("Starting Save!");
+        //console.log("Starting Save!");
         var gimme = [];
         for (var i = 0; t.h > i; i++) {
             gimme.push([]);
@@ -326,7 +326,7 @@ function loop() {
             }
         }
         fs.writeFile('./anothermap.json', JSON.stringify(gimme), function() {
-            console.log("World Saved!");
+            //console.log("World Saved!");
         });
         //ws.send(JSON.stringify(gimme));
 

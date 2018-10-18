@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+    <body>
+        <canvas width="768" height="432" id="canvas2"></canvas>
+        <canvas width="768" height="432" id="canvas" oncontextmenu="return false;"></canvas>
+        <script src="init.js" type="application/javascript"></script>
+        <script src="assets.js" type="application/javascript"></script>
+        <script src="exportimportmap.js" type="application/javascript"></script>
+        <script>
+            //  var map = {
+            //      tiles: [],
+            //      lines: []
+            // };
+            map = {};
+            
+            var getjson = new XMLHttpRequest();
+
+            getjson.open("GET", "http://50.39.110.171:42069/html/game/map.json");
+            
+            getjson.send();
+
+            getjson.onload = function() {
+                map = JSON.parse(getjson.responseText);
+                console.log(map);
+
+
+
+
+
+                            map.lines = JSON.parse('[[[{"start":{"x":384,"y":64},"end":{"x":32,"y":63.999999},"type":"solid","ray":"solid"},{"start":{"x":32,"y":64},"end":{"x":32,"y":128},"type":"solid","ray":"solid"},{"start":{"x":32,"y":128},"end":{"x":208,"y":128},"type":"solid","ray":"solid"},{"start":{"x":208,"y":128},"end":{"x":208,"y":208},"type":"solid","ray":"solid"},{"start":{"x":208,"y":208},"end":{"x":528,"y":208},"type":"solid","ray":"solid"},{"start":{"x":528,"y":208},"end":{"x":528,"y":112},"type":"solid","ray":"solid"},{"start":{"x":528,"y":112},"end":{"x":480,"y":112},"type":"solid","ray":"solid"},{"start":{"x":480,"y":112},"end":{"x":480,"y":96},"type":"solid","ray":"solid"},{"start":{"x":480,"y":96},"end":{"x":544,"y":96},"type":"solid","ray":"solid"},{"start":{"x":544,"y":96},"end":{"x":544,"y":128},"type":"solid","ray":"solid"},{"start":{"x":544,"y":128},"end":{"x":608,"y":128},"type":"solid","ray":"solid"},{"start":{"x":384,"y":160},"end":{"x":384,"y":64},"type":"solid","ray":"solid"},{"start":{"x":480,"y":160},"end":{"x":384,"y":160},"type":"solid","ray":"solid"},{"start":{"x":480,"y":144},"end":{"x":480,"y":160},"type":"solid","ray":"solid"},{"start":{"x":432,"y":144},"end":{"x":480,"y":144},"type":"solid","ray":"solid"},{"start":{"x":432,"y":64},"end":{"x":432,"y":144},"type":"solid","ray":"solid"},{"start":{"x":640,"y":64},"end":{"x":432,"y":64},"type":"solid","ray":"solid"},{"start":{"x":640,"y":208},"end":{"x":640,"y":64},"type":"solid","ray":"solid"},{"start":{"x":576,"y":208},"end":{"x":640,"y":208},"type":"solid","ray":"solid"},{"start":{"x":608,"y":128},"end":{"x":608,"y":176},"type":"solid","ray":"solid"},{"start":{"x":608,"y":176},"end":{"x":544,"y":176},"type":"solid","ray":"solid"},{"start":{"x":576,"y":224},"end":{"x":576,"y":208},"type":"solid","ray":"solid"},{"start":{"x":640,"y":224},"end":{"x":576,"y":224},"type":"solid","ray":"solid"},{"start":{"x":640,"y":288},"end":{"x":640,"y":224},"type":"solid","ray":"solid"},{"start":{"x":496,"y":288},"end":{"x":640,"y":288},"type":"solid","ray":"solid"},{"start":{"x":544,"y":176},"end":{"x":544,"y":256},"type":"solid","ray":"solid"},{"start":{"x":544,"y":256},"end":{"x":496,"y":256},"type":"solid","ray":"solid"}],[],[],[],[],[],[],[],[],[]],[[],[],[],[],[],[],[],[],[],[]],[[],[],[],[],[],[],[],[],[],[]],[[],[],[],[],[],[],[],[],[],[]],[[],[],[],[],[],[],[],[],[],[]],[[],[],[],[],[],[],[],[],[],[]],[[],[],[],[],[],[],[],[],[],[]],[[],[],[],[],[],[],[],[],[],[]],[[],[],[],[],[],[],[],[],[],[]],[[],[],[],[],[],[],[],[],[],[]]]');
+
+
+
+
+
+
+                loop();
+            }
+
+
+
+            // for (var i = 0; 50 > i; i++) {
+            //     map.tiles.push([]);
+            //     for (var i2 = 0; 50 > i2; i2++) {
+            //         map.tiles[i].push([{
+            //             type: "none",
+            //             texture: false
+            //         }]);
+            //     }
+            // }
+            
+            function hasTile(block, tile) {
+                var whatToReturn = false
+                block.forEach(function (e, i) {
+                    if (e.texture === tile) {
+                        whatToReturn = i;
+                    }
+                });
+                return whatToReturn;
+            }
+
+            function drawTile(tile, x, y) {
+                for (var i = 0; tile.length > i; i++) {
+                    if (tile[i].type == "tile" && (tile[i].texture != false || tile[i].texture == 0)) {
+                        ctx.save();
+                        ctx.translate(x * 16 + 8, y * 16 + 8);
+                        ctx.rotate(tile[i].rotate);
+                        ctx.drawImage(aa[tile[i].texture], -8, -8);
+                        ctx.restore();
+                    }
+                }
+            }
+
+            function drawTileImage(tile, x, y) {
+                for (var i = 0; tile.length > i; i++) {
+                    if (tile[i].type == "tile") {
+                        ctx.save();
+                        ctx.translate(x * 16 + 8, y * 16 + 8);
+                        ctx.rotate(tile[i].rotate);
+                        ctx.drawImage(tile[i].texture, -8, -8);
+                        ctx.restore();
+                    }
+                }
+            }
+
+            function renderAllTiles() {
+                for (var i = 0; map.tiles.length > i; i++) {
+                    for (var i2 = 0; map.tiles[i].length > i2; i2++) {
+                        drawTile(map.tiles[i][i2], i2, i);
+                    }
+                }
+            }
+
+            var tileIndex = 0;
+            
+            var l = 0;
+            
+            var lS = 0;
+
+            var placeLine = {
+                start: { x: 0, y: 0 },
+                end: { x: 0, y: 0 },
+                type: "solid",
+                ray: "solid"
+            };
+
+            function loop() {
+                l++
+                
+                if (kD[87] == true) {
+                    tileIndex++;
+                }
+
+                if (kD[83] == true) {
+                    tileIndex--;
+                }
+                
+
+                if (lS > 0) {
+                    placeLine.end = { x: Math.floor(m.x / 40) * 16, y: Math.floor(m.y / 40) * 16 };
+                    lS = 2;
+                }
+
+                if (kD[65] == true) {
+                    if (lS == 0) {
+                        lS++;
+                        placeLine.start = { x: Math.floor(m.x / 40) * 16, y: Math.floor(m.y / 40) * 16 };
+                    }
+                    if (lS == 2) {
+                        lS = 0;
+                        map.lines[0][0].push(Object.assign({}, placeLine));
+                    }
+                }
+
+                if (kD[68] == true) {
+                    map.lines[0][0].pop();
+                }
+
+                tileIndex = clamp(tileIndex, 0, aarr.length - 1);
+
+                ctx.clearRect(0, 0, c.width, c.height);
+
+                //renderAllTiles();
+                ctx.drawImage(a.map, 0, 0);
+
+                ctx.strokeStyle = "hsla(" + l + ", 100%, 50%, 1)";
+                ctx.beginPath();
+                ctx.moveTo(placeLine.start.x, placeLine.start.y);
+                ctx.lineTo(placeLine.end.x, placeLine.end.y);
+                ctx.stroke();
+                ctx.strokeRect(placeLine.start.x + 8 * Math.cos(Math.atan2(placeLine.start.y - placeLine.end.y, placeLine.start.x - placeLine.end.x) + Math.PI / 2) - 2, 
+                    placeLine.start.y + 8 * Math.sin(Math.atan2(placeLine.start.y - placeLine.end.y, placeLine.start.x - placeLine.end.x) + Math.PI / 2) - 2, 4, 4);
+
+                for (var i = 0; map.lines[0][0].length > i; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(map.lines[0][0][i].start.x, map.lines[0][0][i].start.y);
+                    ctx.lineTo(map.lines[0][0][i].end.x, map.lines[0][0][i].end.y);
+                    ctx.stroke();
+                    ctx.strokeRect(map.lines[0][0][i].start.x + 8 * Math.cos(Math.atan2(map.lines[0][0][i].start.y - map.lines[0][0][i].end.y, map.lines[0][0][i].start.x - map.lines[0][0][i].end.x) + Math.PI / 2) - 2, 
+                    map.lines[0][0][i].start.y + 8 * Math.sin(Math.atan2(map.lines[0][0][i].start.y - map.lines[0][0][i].end.y, map.lines[0][0][i].start.x - map.lines[0][0][i].end.x) + Math.PI / 2) - 2, 4, 4);
+                }
+
+                if (m.mD[0] == true) {
+                    map.tiles[Math.floor(m.y / 40)][Math.floor(m.x / 40)].push(Object.assign({}, aarr[tileIndex][0]));
+                    map.tiles[Math.floor(m.y / 40)][Math.floor(m.x / 40)][map.tiles[Math.floor(m.y / 40)][Math.floor(m.x / 40)].length - 1].texture = indexOfObj(aa, map.tiles[Math.floor(m.y / 40)][Math.floor(m.x / 40)][map.tiles[Math.floor(m.y / 40)][Math.floor(m.x / 40)].length - 1].texture);
+                    console.log( map.tiles[Math.floor(m.y / 40)][Math.floor(m.x / 40)]);
+                }
+                if (m.mD[2] == true && map.tiles[Math.floor(m.y / 40)][Math.floor(m.x / 40)].length > 0) {
+                    map.tiles[Math.floor(m.y / 40)][Math.floor(m.x / 40)].pop();
+                }
+
+                ctx.strokeStyle = "#00000016";
+                
+                for (var i = 0; 10 > i; i++) {
+                    for (var i2 = 0; 10 > i2; i2++) {
+                        ctx.strokeRect(Math.floor(m.x / 40) * 16 + i2 * 16 - 64, Math.floor(m.y / 40) * 16 + i * 16 - 64, 16, 16);
+                    }
+                }
+
+                drawTileImage(aarr[tileIndex], Math.floor(m.x / 40), Math.floor(m.y / 40));
+
+                for (var i = 0; kD.length > i; i++) {
+                    if (kD[i]) {
+                        kD[i] = 2;
+                    }
+                }
+
+                m.mD = [2, 2, 2];
+
+                requestAnimationFrame(loop);
+            }
+            loop();
+        </script>
+    </body>
+</html>
