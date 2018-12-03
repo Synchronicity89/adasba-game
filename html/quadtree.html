@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            img {
+                width: 3840px; 
+                height: 2160px;
+            }    
+        </style>
+    </head>
+    <body>
+        <img src="http://50.39.110.171:42069/image/maze.png">
+        <canvas width="3840" height="2160" id="canvas" crossorigin="Anonymous"></canvas>
+        <script>
+            function mean(d) {
+                var mean = 0;
+                for (var i = 0; d.length > i; i++) {
+                    mean += d[i];
+                }
+                return mean / d.length;
+            }
+
+            function standardDeviation(d) {
+                var sdmean = mean(d);
+                var sd = 0;
+                for (var i = 0; d.length > i; i++) {
+                    sd += Math.pow(d[i] - sdmean, 2);
+                }
+                return Math.sqrt(sd / (d.length - 1));
+            }
+
+            function maximum(d) {
+                var max = -Infinity;
+                for (var i = 0; d.length > i; i++) {
+                    if (d[i] > max) {
+                        max = d[i];
+                    }
+                }
+                return max;
+            }
+
+            function minimum(d) {
+                var min = Infinity;
+                for (var i = 0; d.length > i; i++) {
+                    if (d[i] < min) {
+                        min = d[i];
+                    }
+                }
+                return min;
+            }
+
+            function quadtreeImage(d, threshhold, maxrange) {
+                var data = {
+                    r: [],
+                    g: [],
+                    b: [],
+                    a: []
+                };
+                for (var i = 0; d.data.length / 4 > i; i++) {
+                    data.r.push(d.data[i * 4]);
+                    data.g.push(d.data[i * 4 + 1]);
+                    data.b.push(d.data[i * 4 + 2]);
+                    data.a.push(d.data[i * 4 + 3]);
+                }
+                var quads = [];
+                quads.push({
+                    x: 0,
+                    y: 0,
+                    w: d.width,
+                    h: d.height
+                });
+                var result = [];
+                for (var i = 0; quads.length > i; i++) {
+                    var rect = {
+                        r: [],
+                        g: [],
+                        b: [],
+                        a: []
+                    };
+                    for (var i2 = quads[i].y; quads[i].y + quads[i].h > i2; i2++) {
+                        for (var i3 = quads[i].x; quads[i].x + quads[i].w > i3; i3++) {
+                            rect.r.push(data.r[i3 + d.width * i2]);
+                            rect.g.push(data.g[i3 + d.width * i2]);
+                            rect.b.push(data.b[i3 + d.width * i2]);
+                            rect.a.push(data.a[i3 + d.width * i2]);
+                        }
+                    }
+                    if ((maximum(rect.r) - minimum(rect.r) < maxrange && maximum(rect.g) - minimum(rect.g) < maxrange && maximum(rect.b) - minimum(rect.b) < maxrange && maximum(rect.a) - minimum(rect.a) < maxrange) || quads[i].w == 1) {
+                        result.push({
+                        x: quads[i].x,
+                        y: quads[i].y,
+                        w: quads[i].w,
+                        h: quads[i].h,
+                        r: Math.round(mean(rect.r)),
+                        g: Math.round(mean(rect.g)),
+                        b: Math.round(mean(rect.b)),
+                        a: Math.round(mean(rect.a))
+                    });
+                    } else {
+                        quads.push({
+                            x: quads[i].x,
+                            y: quads[i].y,
+                            w: Math.ceil(quads[i].w / 2),
+                            h: Math.ceil(quads[i].h / 2)
+                        });
+                        quads.push({
+                            x: quads[i].x + Math.ceil(quads[i].w / 2),
+                            y: quads[i].y,
+                            w: Math.ceil(quads[i].w / 2),
+                            h: Math.ceil(quads[i].h / 2)
+                        });
+                        quads.push({
+                            x: quads[i].x,
+                            y: quads[i].y + Math.ceil(quads[i].h / 2),
+                            w: Math.ceil(quads[i].w / 2),
+                            h: Math.ceil(quads[i].h / 2)
+                        });
+                        quads.push({
+                            x: quads[i].x + Math.ceil(quads[i].w / 2),
+                            y: quads[i].y + Math.ceil(quads[i].h / 2),
+                            w: Math.ceil(quads[i].w / 2),
+                            h: Math.ceil(quads[i].h / 2)
+                        });
+                    }
+                }
+                return result;
+            }
+
+            
+            var c = document.getElementById("canvas");
+            var ctx = c.getContext("2d");
+            
+            var img = new Image();
+
+            img.src = "http://50.39.110.171:42069/image/maze.png";
+            
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, 3840, 2160);
+                var squares = quadtreeImage(ctx.getImageData(0, 0, c.width, c.height), 96, 24);
+                squares.forEach(function (e) {
+                    ctx.fillStyle = "rgba(" + e.r + ", " + e.g + ", " + e.b + ", " + e.a + ")";
+                    ctx.fillRect(e.x, e.y, e.w, e.h);
+                });
+                console.log(JSON.stringify(squares));
+                var rects = [];
+                for (var i = 0; squares.length > i; i++) {
+                    rects.push(squares[i].x);
+                    rects.push(squares[i].y);
+                    rects.push(squares[i].w);
+                    rects.push(squares[i].h);
+                    rects.push(squares[i].r);
+                    rects.push(squares[i].g);
+                    rects.push(squares[i].b);
+                    rects.push(squares[i].a);
+                }
+                console.log(JSON.stringify(rects));
+            }
+            
+            // var l = 0;
+
+            // function loop() {
+            //     l++;
+            //     ctx.drawImage(img, 0, 0, 512, 512);
+            //     var squares = quadtreeImage(ctx.getImageData(0, 0, c.width, c.height), Math.sin(l / 25) * 20 + 40);
+            //     squares.forEach(function (e) {
+            //         ctx.fillStyle = "rgba(" + e.r + ", " + e.g + ", " + e.b + ", " + e.a + ")";
+            //         ctx.fillRect(e.x, e.y, e.w, e.h);
+            //     });
+            //     setTimeout(loop, 0);
+            // }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,1098 @@
+﻿﻿<!DOCTYPE html>
+<html>
+
+
+    <head>
+        <meta charset="UTF-8">
+        <style type="text/css">
+
+
+            canvas {
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                top: 0px;
+                left: 0px;
+            }
+    
+        </style>
+    </head>
+
+
+    <body>
+        <canvas id="canvas" width="1920" height="1080" oncontextmenu="return false;"></canvas>
+        <script>
+
+
+                        //define canvas
+            var c = document.getElementById("canvas");
+
+
+            //define canvas context
+            var ctx = c.getContext("2d");
+
+
+            //font size
+            ctx.font = "18px Courier";
+
+
+            //text alignment
+            ctx.textAlign = "center";
+
+
+            //mouse stuff
+            var m = { x: 0, y: 0, m: [false, false, false], md: [false, false, false] };
+
+
+            //mouse move
+            document.addEventListener("mousemove", function(e) {
+                m.x = e.clientX * 1920 / window.innerWidth + view.x;
+                m.y = e.clientY * 1080 / window.innerHeight + view.y;
+            }, false);
+
+
+            //mouse down
+            document.addEventListener("mousedown", function(e) {
+                m.m[e.which - 1] = true;
+                m.md[e.which - 1] = true;
+            }, false);
+
+
+            //mouse up
+            document.addEventListener("mouseup", function(e) {
+                m.m[e.which - 1] = false;
+                m.md[e.which - 1] = false;
+            }, false);
+
+
+            //keyboard stuff
+            var k = [];
+            var kD = [];
+
+
+            //key down
+            document.addEventListener("keydown", function(e) {
+                k[e.keyCode] = true;
+                kD[e.keyCode] = true;
+            }, false);
+
+
+            //key up
+            document.addEventListener("keyup", function(e) {
+                k[e.keyCode] = false;
+                kD[e.keyCode] = false;
+            }, false)
+
+
+            //to connect things together
+            var connectPath = [];
+
+
+            //input/output types
+            var iotypes = ["not", "or", "and", "reg", "s"];
+
+
+            //current input/output type
+            var currentiotype = "not";
+
+
+            function maxPaths(gateType) {
+                switch (gateType) {
+                    case "not":
+                        return 1;
+                    case "and":
+                        return 2;
+                    case "or":
+                        return 2;
+                    case "reg":
+                        return 1;
+                    case "s":
+                        return 99999999;
+                    default:
+                        return 99999999;
+                }
+            }
+
+
+            //multi-line text function
+            function multiLineText(x, y, txt) {
+                ctx.fillStyle = "#555555";
+                ctx.strokeStyle = "#555555";
+                ctx.lineWidth = 1;
+                for (var i = 0; txt.length > i; i++) {
+                    ctx.strokeText(txt[i], x, y + 18 * i);
+                    ctx.fillText(txt[i], x, y + 18 * i);
+                }
+            }
+
+
+            //single line text function
+            function singleLineText(txt, x, y) {
+                ctx.fillStyle = "#555555";
+                ctx.strokeStyle = "#555555";
+                ctx.lineWidth = 1;
+                ctx.strokeText(txt, x, y);
+                ctx.fillText(txt, x, y);
+            }
+
+
+            //input/output type
+            function IO(x, y, type) {
+                this.objtype = "io";
+                this.x = x;
+                this.y = y;
+                this.type = type;
+                this.paths = [];
+                this.pathsToMe = [];
+                switch (type) {
+                    case "not":
+                        this.stored = [undefined];
+                        this.logic = function() {
+                            if (this.stored[0] != undefined) {
+                                for (var i = 0; this.paths.length > i; i++) {
+                                    b.push(new Bit(!this.stored[0].value, this, this.paths[i]));
+                                }
+                                this.stored = [undefined];
+                            }
+                        }
+                        break;
+                    case "or":
+                        this.stored = [undefined, undefined];
+                        this.logic = function() {
+                            if (this.stored[0] != undefined && this.stored[1] != undefined) {
+                                for (var i = 0; this.paths.length > i; i++) {
+                                    b.push(new Bit(this.stored[0].value || this.stored[1].value, this, this.paths[i]));
+                                }
+                                this.stored = [undefined, undefined];
+                            }
+                        }
+                        break;
+                    case "and":
+                        this.stored = [undefined, undefined];
+                        this.logic = function() {
+                            if (this.stored[0] != undefined && this.stored[1] != undefined) {
+                                for (var i = 0; this.paths.length > i; i++) {
+                                    b.push(new Bit(this.stored[0].value && this.stored[1].value, this, this.paths[i]));
+                                }
+                                this.stored = [undefined, undefined];
+                            }
+                        }
+                        break;
+                    case "reg":
+                        this.stored = [undefined];
+                        this.logic = function() {
+                            if (this.stored[0] != undefined && releaseBit) {
+                                for (var i = 0; this.paths.length > i; i++) {
+                                    b.push(new Bit(this.stored[0].value, this, this.paths[i]));
+                                    this.stored = [undefined];
+                                }
+                            }
+                        }
+                    case "s":
+                        this.stored = [];
+                        this.logic = function() {
+                            for (var i2 = 0; this.stored.length > i2; i2++) {
+                                for (var i = 0; this.paths.length > i; i++) {
+                                    if (this.stored[i2] != undefined) {
+                                        b.push(new Bit(this.stored[i2].value, this, this.paths[i]));
+                                    }
+                                }
+                            }
+                            this.stored = [];
+                        }
+                }
+                this.draw = function() {
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = "#555555";
+                    ctx.fillStyle = "#DDDDDD";
+                    ctx.fillRect(this.x - 12, this.y - 12, 24, 24);
+                    ctx.strokeRect(this.x - 12, this.y - 12, 24, 24);
+                    ctx.lineWidth = 1;
+                    singleLineText(this.type, this.x, this.y - 18);
+                }
+                this.drawLines = function() {
+                    ctx.setLineDash([15, 10]);
+                    for (var i = 0; this.paths.length > i; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(this.paths[i].x, this.paths[i].y);
+                        ctx.stroke();
+                    }
+                    ctx.setLineDash([]);
+                }
+            }
+
+
+            //source type
+            function In(x, y, f, desc) {
+                this.objtype = "in";
+                this.x = x;
+                this.y = y;
+                this.f = f;
+                this.stored = [];
+                this.paths = [];
+                this.pathsToMe = [];
+                this.desc = desc;
+                this.draw = function() {
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = "#555555";
+                    ctx.fillStyle = "#DDDDDD";
+                    ctx.fillRect(this.x - 12, this.y - 12, 24, 24);
+                    ctx.strokeRect(this.x - 12, this.y - 12, 24, 24);
+                    ctx.lineWidth = 1;
+                    singleLineText("in", this.x, this.y - 18);
+                    multiLineText(this.x, this.y + 29, this.desc);
+                }
+                this.drawLines = function() {
+                    ctx.setLineDash([15, 10]);
+                    for (var i = 0; this.paths.length > i; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(this.paths[i].x, this.paths[i].y);
+                        ctx.stroke();
+                    }
+                    ctx.setLineDash([]);
+                }
+            }
+
+
+            function binaryInput(x, y, bits, place) {
+                var seq = [];
+                for (var i = 0; Math.pow(2, bits - place) > i; i++) {
+                    if (i % 2 == 0) {
+                        for (var i2 = 0; Math.pow(2, place) > i2; i2++) {
+                            seq.push(false);
+                        }
+                    } else {
+                        for (var i2 = 0; Math.pow(2, place) > i2; i2++) {
+                            seq.push(true);
+                        }
+                    }
+                }
+                var f = function(a) {
+                    var sequence = seq;
+
+
+                    if (releaseBit && bitCounter < Math.pow(bits, 2)) {
+                        for (var i = 0; a.length > i; i++) {
+                            b.push(new Bit(sequence[bitCounter], this, a[i]));
+                        }
+                    }
+                }
+
+
+                var desc = ["Produces:"];
+
+
+                for (var i = 0; seq.length > i; i++) {
+                    if (i % 8 == 0) {
+                        desc.push("");
+                    }
+                    if (seq[i]) {
+                        desc[Math.floor(i / 8) + 1] += "1, ";
+                    } else {
+                        desc[Math.floor(i / 8) + 1] += "0, "
+                    }
+                }
+
+
+                return new In(x, y, f, desc);
+            }
+
+
+            //pythagorean distance function
+            function dist(x, y) {
+                return Math.sqrt(x * x + y * y);
+            }
+
+
+            //clamps between two values
+            function clamp(value, min, max) {
+                if (value > max) {
+                    return max;
+                } else if (value < min) {
+                    return min;
+                }
+                return value;
+            }
+
+
+            //bit type
+            function Bit(value, from, to) {
+                this.objtype = "bit";
+                this.from = from;
+                this.to = to;
+                this.value = value;
+                this.x = from.x;
+                this.y = from.y;
+                this.destx = to.x;
+                this.desty = to.y;
+                this.dx = this.destx - this.x;
+                this.dy = this.desty - this.y;
+                this.alive = true;
+                this.move = function() {
+                    this.x += bitSpeed * Math.cos(Math.atan2(this.dy, this.dx));
+                    this.y += bitSpeed * Math.sin(Math.atan2(this.dy, this.dx));
+                    if (dist(this.x - this.destx, this.y - this.desty) < bitSpeed + 1) {
+                        if (this.to.objtype != "out") {
+                            this.to.stored[this.to.pathsToMe.indexOf(this.from)] = this;
+                        } else {
+                            this.to.stored.push(this);
+                        }
+                        this.alive = false;
+                    }
+                }
+                this.draw = function() {
+                    ctx.strokeStyle = "#555555";
+                    if (this.value) {
+                        ctx.fillStyle = "#555555";
+                    } else {
+                        ctx.fillStyle = "#DDDDDD";
+                    }
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 10, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.lineWidth = 1;
+                    if (this.value) {
+                        singleLineText(1, this.x, this.y - 15);
+                    } else {
+                        singleLineText(0, this.x, this.y - 15);
+                    }
+                }
+            }
+
+
+            function Out(x, y, f, desc) {
+                this.objtype = "out";
+                this.x = x;
+                this.y = y;
+                this.f = f;
+                this.desc = desc;
+                this.stored = [];
+                this.paths = [];
+                this.pathsToMe = [];
+                this.score = 0;
+                this.draw = function() {
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = "#555555";
+                    ctx.fillStyle = "#DDDDDD";
+                    ctx.fillRect(this.x - 12, this.y - 12, 24, 24);
+                    ctx.strokeRect(this.x - 12, this.y - 12, 24, 24);
+                    ctx.fillStyle = "#555555";
+                    ctx.fillRect(this.x - 12, this.y - 12, 24 * this.score, 24);
+                    ctx.lineWidth = 1;
+                    singleLineText("out", this.x, this.y - 18);
+                    multiLineText(this.x, this.y + 29, this.desc);
+                }
+                this.drawLines = function() {
+                    ctx.setLineDash([15, 10]);
+                    for (var i = 0; this.paths.length > i; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(this.paths[i].x, this.paths[i].y);
+                        ctx.stroke();
+                    }
+                    ctx.setLineDash([]);
+                }
+            }
+
+            function staticOut(x, y, req) {
+                var thisOut = new Out(x, y, function (a) {
+                    var seq = req;
+                    if (a.length > req.length) {
+                        a.pop();
+                    }
+                    if (!testing) {
+                        this.stored = [];
+                    }
+                    for (var i = 0; a.length > i; i++) {
+                        if (a[i].value != seq[i]) {
+                            this.stored = [];
+                        }
+                    }
+                    return clamp(a.length / req.length, 0, req.length);
+                }, []);
+
+                var desc = ["Requires:"];
+
+                for (var i = 0; req.length > i; i++) {
+                    if (i % 8 == 0) {
+                        desc.push("");
+                    }
+                    if (req[i]) {
+                        desc[Math.floor(i / 8) + 1] += "1, ";
+                    } else {
+                        desc[Math.floor(i / 8) + 1] += "0, "
+                    }
+                }
+
+                thisOut.desc = desc;
+
+                return thisOut;
+            }
+
+            function falseButThese(length, trues) {
+                var arr = new Array(length);
+                arr.fill(false);
+                for (var i = 0; trues.length > i; i++) {
+                    arr[trues[i]] = true;
+                }
+                return arr;
+            }
+
+            function TXT(x, y, txt) {
+                this.x = x;
+                this.y = y;
+                this.txt = txt;
+                this.draw = function() {
+                    multiLineText(this.x, this.y, this.txt);
+                }
+            }
+
+
+            function SlideshowTXT(x, y, txt) {
+                this.x = x;
+                this.y = y;
+                this.txt = txt;
+                this.index = 0;
+                this.draw = function() {
+                    multiLineText(this.x, this.y, this.txt[this.index]);
+                    if (kD[39]) {
+                        this.index = clamp(this.index + 1, 0, this.txt.length - 1);
+                    }
+                    if (kD[37]) {
+                        this.index = clamp(this.index - 1, 0, this.txt.length - 1);
+                    }
+                }
+            }
+
+
+            //increments every frame
+            var l = 0;
+
+
+            //ingame objects (excluding bits)
+            var o = [];
+
+
+            //bits
+            var b = [];
+
+
+            //text/deco
+            var t = [];
+
+
+            //current level
+            var currentLevel = 0;
+
+
+            //whether the thing is being "tested" or not
+            var testing = false;
+
+
+            var bitCounter = 0;
+
+
+            var bitDelay = 4;
+
+
+            var releaseBit = false;
+
+
+            var bitSpeed = 1;
+
+            //view position and stuff
+            var view = {
+                x: 0,
+                y: 0
+            }
+
+
+            //in-game loop function (called every 60th of a second)
+            function loop() {
+
+                ctx.fillStyle = "#DDDDDD";
+                ctx.fillRect(0, 0, c.width, c.height);
+
+                ctx.save();
+                ctx.translate(-view.x, -view.y);
+
+
+
+                if (k[49]) {
+                    currentiotype = iotypes[0];
+                }
+                if (k[50]) {
+                    currentiotype = iotypes[1];
+                }
+                if (k[51]) {
+                    currentiotype = iotypes[2];
+                }
+                if (k[52]) {
+                    //currentiotype = iotypes[3];
+                }
+                if (k[53]) {
+                    //currentiotype = iotypes[4];
+                }
+                if (k[38]) {
+                    bitSpeed = clamp(bitSpeed + 0.3, 0.1, 25);
+                }
+                if (k[40]) {
+                    bitSpeed = clamp(bitSpeed - 0.3, 0.1, 25);
+                }
+                if (kD[84]) {
+                    testing = !testing;
+                }
+                if (k[87]) {
+                    view.y -= 10;
+                }
+                if (k[83]) {
+                    view.y += 10;
+                }
+                if (k[65]) {
+                    view.x -= 10;
+                }
+                if (k[68]) {
+                    view.x += 10;
+                }
+                if (testing) {
+                    bitDelay--;
+                    if (bitDelay < 0 && b.length == 0) {
+                        releaseBit = true;
+                        bitDelay = 4;
+                    } else if (b.length != 0) {
+                        bitDelay = 4;
+                    }
+                } else {
+                    b = [];
+                    bitCounter = 0;
+                    bitDelay = 4;
+                    releaseBit = false;
+                    for (var i = 0; o.length > i; i++) {
+                        if (o[i].objtype == "out") {
+                            o[i].score = 0;
+                        }
+                    }
+                }
+
+
+                ctx.lineWidth = 2;
+                ctx.lineDashOffset = -l / 6;
+
+
+                ctx.fillStyle = "#555555";
+
+
+                ctx.setLineDash([5, 5]);
+                
+                ctx.save();
+                ctx.translate(Math.round(view.x / 100) * 100, Math.round(view.y / 100) * 100);
+
+                ctx.strokeStyle = "#BBBBBB";
+                ctx.beginPath();
+                for (var i = 0; 1080 / 50 > i; i++) {
+                    ctx.lineTo(i * 100, -50);
+                    ctx.lineTo(i * 100, 1130);
+                    ctx.lineTo(i * 100 + 50, 1130);
+                    ctx.lineTo(i * 100 + 50, -50);
+                }
+                ctx.stroke();
+                ctx.beginPath();
+                for (var i = 0; 1920 / 50 > i; i++) {
+                    ctx.lineTo(-50, i * 100);
+                    ctx.lineTo(1970, i * 100);
+                    ctx.lineTo(1970, i * 100 + 50);
+                    ctx.lineTo(-50, i * 100 + 50);
+                }
+                ctx.stroke();
+
+                ctx.restore();
+
+                ctx.strokeStyle = "#555555";
+
+
+                ctx.lineDashOffset = -l / 2;
+
+
+                ctx.setLineDash([10, 10]);
+
+
+                ctx.strokeRect(Math.floor(m.x / 50 + 0.5) * 50 - 25, Math.floor(m.y / 50 + 0.5) * 50 - 25, 50, 50);
+
+
+                for (var i = 0; o.length > i; i++) {
+                    o[i].drawLines();
+                }
+
+
+                ctx.setLineDash([15, 10]);
+                ctx.beginPath();
+                if (connectPath.length == 1) {
+                    ctx.moveTo(connectPath[0].x, connectPath[0].y);
+                    ctx.lineTo(Math.floor(m.x / 50 + 0.5) * 50, Math.floor(m.y / 50 + 0.5) * 50);
+                }
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+
+                for (var i = 0; t.length > i; i++) {
+                    t[i].draw();
+                }
+
+
+                for (var i = 0; o.length > i; i++) {
+                    switch (o[i].objtype) {
+                        case "io":
+                            o[i].draw();
+                            o[i].logic();
+                            break;
+                        case "in":
+                            o[i].f(o[i].paths);
+                            o[i].draw();
+                            break;
+                        case "out":
+                            o[i].score = o[i].f(o[i].stored);
+                            o[i].draw();
+                    }
+                }
+
+
+                for (var i = 0; b.length > i; i++) {
+                    b[i].move();
+                    b[i].draw();
+                }
+
+
+                for (var i = 0; b.length > i; i++) {
+                    if (!b[i].alive) {
+                        b.splice(i, 1);
+                        i--;
+                    }
+                }
+                if (!testing) {
+                    if (m.md[0]) {
+                        var isAlreadyThere = false;
+                        var thereIndex = 0;
+                        for (var i = 0; o.length > i; i++) {
+                            if (o[i].x == Math.floor(m.x / 50 + 0.5) * 50 && o[i].y == Math.floor(m.y / 50 + 0.5) * 50) {
+                                isAlreadyThere = true;
+                                thereIndex = i;
+                            }
+                        }
+                        if (!isAlreadyThere) {
+                            connectPath = [];
+                            o.push(new IO(Math.floor(m.x / 50 + 0.5) * 50, Math.floor(m.y / 50 + 0.5) * 50, currentiotype));
+                        } else {
+                            connectPath.push(o[thereIndex]);
+                        }
+
+
+                        if (connectPath.length > 1) {
+                            if (connectPath[0] !== connectPath[1] && connectPath[1].pathsToMe.length < maxPaths(connectPath[1].type)) {
+                                connectPath[0].paths.push(connectPath[1]);
+                                connectPath[1].pathsToMe.push(connectPath[0]);
+                                connectPath = [];
+                            } else {
+                                connectPath.pop();
+                            }
+                        }
+                    }
+
+
+                    if (m.md[2]) {
+
+
+                        connectPath = [];
+
+
+                        var isAlreadyThere = false;
+                        var thereIndex = 0;
+                        for (var i = 0; o.length > i; i++) {
+                            if (o[i].x == Math.floor(m.x / 50 + 0.5) * 50 && o[i].y == Math.floor(m.y / 50 + 0.5) * 50) {
+                                isAlreadyThere = true;
+                                thereIndex = i;
+                            }
+                        }
+                        if (isAlreadyThere && o[thereIndex].objtype == "io") {
+                            for (var i = 0; o.length > i; i++) {
+                                for (var i2 = 0; o[i].paths.length > i2; i2++) {
+                                    if (o[i].paths[i2] === o[thereIndex]) {
+                                        for (var i3 = 0; o[i].paths[i2].pathsToMe > i3; i3++) {
+                                            if (o[i].paths[i2].pathsToMe[i3] == o[i]) {
+                                                o[i].paths[i2].pathsToMe.splice(i3, 1);
+                                            }
+                                        }
+                                        o[i].paths.splice(i2, 1);
+                                    }
+                                }
+                            }
+                            o.splice(thereIndex, 1);
+                        }
+                    }
+                }
+
+
+                var placepos = {
+                    x: Math.floor(m.x / 50 + 0.5) * 50,
+                    y: Math.floor(m.y / 50 + 0.5) * 50
+                };
+
+
+                ctx.globalAlpha = 0.5;
+
+
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#555555";
+                ctx.fillStyle = "#DDDDDD";
+                ctx.fillRect(placepos.x - 12, placepos.y - 12, 24, 24);
+                ctx.strokeRect(placepos.x - 12, placepos.y - 12, 24, 24);
+                ctx.lineWidth = 1;
+                singleLineText(currentiotype, placepos.x, placepos.y - 18);
+
+
+                ctx.globalAlpha = 1;
+
+
+                ctx.restore();
+
+                ctx.textAlign = "left";
+                ctx.font = "36px Courier";
+                ctx.strokeStyle = "#555555";
+                ctx.lineWidth = 2;
+                ctx.setLineDash([10, 10]);
+
+
+                var currentiotypeindex = iotypes.indexOf(currentiotype);
+
+
+                ctx.strokeRect(5, 5 + 40 * currentiotypeindex, 200, 40);
+
+
+                ctx.setLineDash([0, 0]);
+
+
+                singleLineText("1 - not", 10, 35);
+                singleLineText("2 - or", 10, 75);
+                singleLineText("3 - and", 10, 115);
+                //singleLineText("4 - reg", 10, 155);
+                //singleLineText("5 - s", 10, 195);
+                singleLineText("Bit Speed (up/down arrows) - " + Math.round(bitSpeed * 10) / 10, 10, 155);
+
+
+                var complete = true;
+
+
+                for (var i = 0; o.length > i; i++) {
+                    if (o[i].objtype == "out" && o[i].score != 1) {
+                        complete = false;
+                    }
+                }
+
+
+                if (complete) {
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = "#555555";
+                    ctx.fillStyle = "#DDDDDD";
+                    ctx.fillRect(405, 40, 1100, 140);
+                    ctx.strokeRect(405, 40, 1100, 140);
+                    ctx.fillStyle = "#555555";
+                    ctx.font = "72px Courier";
+                    ctx.fillText("Level Complete!", 960, 100);
+                    ctx.fillText("Press ENTER to Continue.", 960, 160);
+                    ctx.font = "18px Courier";
+                    if (kD[13]) {
+                        b = [];
+                        o = [];
+                        t = [];
+
+
+                        testing = false;
+                        currentLevel++;
+                        levels[currentLevel].load();
+                    }
+                }
+
+
+                ctx.textAlign = "center"
+                ctx.font = "18px Courier";
+
+                l++;
+
+
+                m.md = [false, false, false];
+
+
+                for (var i = 0; 256 > i; i++) {
+                    kD[i] = false;
+                }
+
+
+                if (releaseBit) {
+                    releaseBit = false;
+                    bitCounter++;
+                }
+
+
+                //repeat loop
+                requestAnimationFrame(loop);
+            }
+
+
+
+
+            var levels = [
+                {
+                    load: function() {
+                        t.push(new TXT(950, 250, ["Right arrow to continue, left arrow to go back."]));
+
+
+                        t.push(new SlideshowTXT(950, 300, [
+                            ["Welcome to the I/O game!",
+                            "Your goal is to convert inputs into the required outputs using logic gates."],
+                            ["To the left is the 'input' (in). It creates bits which travel through your gates.",
+                            "To the right is the 'output' (out). It needs certain bits to reach it."],
+                            ["Press the '1' key to select the 'not' gate.",
+                            "This should be selected by default. (in the top left corner)",
+                            "Click to place it wherever you want."],
+                            ["Unsatisfied with its location? Right click to delete it."],
+                            ["To connect gates, click the gate you want your signal to begin at. (in this case, the 'in' gate)",
+                            "Then, click the gate which you want your signal to end at. (your newly-created 'not' gate)",
+                            "You can cancel a connection by right-clicking."],
+                            ["These 'not' gates invert signals.",
+                            "In other words, they turn a '0' to a '1', and a '1' to a '0'.",
+                            "We can't see this yet since we haven't 'tested' the signal.",
+                            "Connect the 'not' gate to the output, then press 'T' to test the signal.",
+                            "The input will produce a '0' bit."]
+                        ]));
+
+
+                        o.push(new In(600, 550, function(a) {
+                            if (releaseBit && bitCounter == 0) {
+                                for (var i = 0; a.length > i; i++) {
+                                    b.push(new Bit(false, this, a[i]));
+                                }
+                            }
+                        }, ["Produces:", "0"]));
+
+
+                        o.push(new Out(1300, 550, function(a) {
+                            for (var i = 0; a.length > i; i++) {
+                                if (!a[i].value) {
+                                    this.stored = [];
+                                }
+                            }
+                            return clamp(a.length, 0, 1);
+                        }, ["Requires:", "1"]));
+                    }
+                },
+                {
+                    load: function() {
+                        t.push(new TXT(950, 250, ["Right arrow to continue, left arrow to go back."]));
+                        t.push(new SlideshowTXT(950, 300, [
+                            ["Now that you've mastered the 'not' gate, let's look at the 'or' gate.",
+                            "Select the 'or' gate by pressing '2'. The 'or' gate will require two inputs."],
+                            ["The 'or' gate will always output a '1' unless both inputs are '0'",
+                            "In that case, it will output a '0'"],
+                            ["The inputs here will continuously loop through the numbers listed below them.",
+                            "The output requires the numbers in the order listed below it.",
+                            "Notice how when you look at the corresponding numbers in each list,",
+                            "the logic fits that of an 'or' gate."],
+                            ["The first number on the inputs is '0'. The output also has a '0'.",
+                            "For all the other inputs (where at least one of them is a '1'), the required output is '1'."],
+                            ["Try and set up a circuit which produces the desired output."]
+                        ]));
+                        for (var i = 0; 2 > i; i++) {
+                            o.push(binaryInput(600, 450 + 200 * i, 2, i));
+                        }
+                        o.push(staticOut(1300, 550, [false, true, true, true]));
+                    }
+                },
+                {
+                    load: function() {
+                        t.push(new TXT(950, 250, ["Right arrow to continue, left arrow to go back."]));
+                        t.push(new SlideshowTXT(950, 300, [
+                            ["You may have noticed the third type of gate, the 'and' gate.",
+                            "The 'and' gate only returns a '1' if both inputs are '1'.",
+                            "Otherwise it just returns a '0'."],
+                            ["I think you know what to do."]
+                        ]));
+                        for (var i = 0; 2 > i; i++) {
+                            o.push(binaryInput(600, 450 + 200 * i, 2, i));
+                        }
+                        o.push(staticOut(1300, 550, [false, false, false, true]));
+                    }
+                },
+                {
+                    load: function() {
+                        t.push(new TXT(950, 250, ["Right arrow to continue, left arrow to go back."]));
+                        t.push(new SlideshowTXT(950, 300, [
+                            ["Sometimes you need more than one logic gate..."],
+                            ["Hint: Notice how the output looks like the reverse of the 'or' gate from level 2?",
+                            "You might need to apply this kind of thinking to later levels."]
+                        ]));
+                        for (var i = 0; 2 > i; i++) {
+                            o.push(binaryInput(600, 450 + 200 * i, 2, i));
+                        }
+                        o.push(staticOut(1300, 550, [true, false, false, false]));
+                    }
+                },
+                {
+                    load: function() {
+                        for (var i = 0; 2 > i; i++) {
+                            o.push(binaryInput(600, 450 + 200 * i, 2, i));
+                        }
+                        o.push(staticOut(1300, 550, [true, true, true, false]));
+                    }
+                },
+                {
+                    load: function() {
+                        t.push(new TXT(950, 250, ["Right arrow to continue, left arrow to go back."]));
+                        t.push(new SlideshowTXT(950, 300, [
+                            ["This one requires a minimum of four gates.",
+                            "For a hint, press the right arrow."],
+                            ["Hint: This appears to be an 'or' gate, but not an 'and' gate...",
+                            "At the same time..."]
+                        ]));
+                        for (var i = 0; 2 > i; i++) {
+                            o.push(binaryInput(600, 450 + 200 * i, 2, i));
+                        }
+                        o.push(staticOut(1300, 550, [false, true, true, false]));
+                    }
+                },
+                {
+                    load: function() {
+                        for (var i = 0; 2 > i; i++) {
+                            o.push(binaryInput(600, 450 + 200 * i, 2, i));
+                        }
+                        o.push(staticOut(1300, 550, [true, false, false, true]));
+                    }
+                },
+                {
+                    load: function() {
+                        t.push(new TXT(950, 50, ["Right arrow to continue, left arrow to go back."]));
+                        t.push(new SlideshowTXT(950, 100, [
+                            ["This one is a bit more complicated.",
+                            "There are three inputs rather than two."],
+                            ["Feel free to attempt this on your own. If you need some help, then continue."],
+                            ["For a moment, ignore all the '0's in the output. Let's just test for the '1'.",
+                            "The '1' is at the sixth place in the output. The sixth places in the inputs,",
+                            "in order from top to bottom, are '1, 0, 1'."],
+                            ["What we're going to do is combine the inputs together with 'and',",
+                            "so the output only receives a '1' if all the 'and' gates accept '1's"],
+                            ["The first and last inputs are already '1's at position 6, so they aren't a problem.",
+                            "However, the middle input is '0' at position 6. Therefore to turn it into a '1', you need... (try and guess)"],
+                            ["A 'not' gate!",
+                            "Connect the middle input to a 'not' gate."],
+                            ["Then, use an 'and' gate to connect any of the two inputs (or the 'not' gate in the case of the middle input).",
+                            "Use another 'and' gate to connect the last input (or 'not' gate) with the other 'and' gate.",
+                            "The circuit should work now."]
+                        ]));
+                        for (var i = 0; 3 > i; i++) {
+                            o.push(binaryInput(600, 350 + 200 * i, 3, i));
+                        }
+                        o.push(staticOut(1300, 550, falseButThese(8, [5])));
+                    }
+                },
+                {
+                    load: function() {
+                        t.push(new TXT(950, 150, ["Try applying this concept to four inputs.",
+                        "Inputs are on two lines to save space, read them how you would normally."]));
+                        for (var i = 0; 4 > i; i++) {
+                            o.push(binaryInput(600, 250 + 200 * i, 4, i));
+                        }
+                        o.push(staticOut(1300, 550, falseButThese(16, [9])));
+                    }
+                },
+                {
+                    load: function() {
+                        t.push(new TXT(950, 150, ["Right arrow to continue, left arrow to go back."]));
+                        t.push(new SlideshowTXT(950, 200, [
+                            ["What if there are two ones?",
+                            "For a hint, press the right arrow."],
+                            ["Hint: You're going to need to test for one 'or' the other."]
+                        ]));
+                        for (var i = 0; 4 > i; i++) {
+                            o.push(binaryInput(600, 250 + 200 * i, 4, i));
+                        }
+                        o.push(staticOut(1300, 550, falseButThese(16, [6, 12])));
+                    }
+                },
+                {
+                    load: function() {
+                        t.push(new TXT(950, 150, ["This might seem very complicated...",
+                        "But I think you know what to do."]));
+                        for (var i = 0; 4 > i; i++) {
+                            o.push(binaryInput(600, 250 + 200 * i, 4, i));
+                        }
+                        o.push(staticOut(1300, 550, falseButThese(16, [1, 5, 10, 15])));
+                    }
+                },
+                {
+                    load: function() {
+                        t.push(new TXT(950, 150, ["Don't worry, this is actually *easier* than the last one."]));
+                        for (var i = 0; 4 > i; i++) {
+                            o.push(binaryInput(600, 250 + 200 * i, 4, i));
+                        }
+                        o.push(staticOut(1300, 550, falseButThese(16, [0, 1, 2, 4, 5, 6, 7, 8, 10, 11, 13, 14, 15])));
+                    }
+                },
+                {
+                    load: function() {
+                        t.push(new TXT(950, 150, ["Two outputs now. Should be no big deal."]));
+                        for (var i = 0; 2 > i; i++) {
+                            o.push(binaryInput(850 + 200 * i, 250, 2, i));
+                        }
+                        o.push(staticOut(850, 800, [false, false, false, true]));
+                        o.push(staticOut(1050, 800, [false, true, true, false]));
+                    }
+                },
+                {
+                    load: function() {
+                        t.push(new TXT(950, 150, ["Why not add a third input?"]));
+                        for (var i = 0; 3 > i; i++) {
+                            o.push(binaryInput(650 + 300 * i, 250, 3, i));
+                        }
+                        o.push(staticOut(800, 800, [false, false, false, true, false, true, true, true]));
+                        o.push(staticOut(1100, 800, [false, true, true, false, true, false, false, true]));
+                    }
+                },
+                {
+                    load: function() {
+                        t.push(new TXT(950, 50, ["It's a seven-segment display! (or in this case, a thirteen-point display).", "Also, did you know that you can use WASD to scroll?"]));
+                        t.push(new TXT(300, 600, ["Scroll down to find the outputs."]));
+                        for (var i = 0; 4 > i; i++) {
+                            o.push(binaryInput(500 + 300 * i, 150, 4, i));
+                        }
+                        o.push(staticOut(650, 1200, falseButThese(10, [0, 2, 3, 4, 5, 6, 7, 8, 9])));
+                        o.push(staticOut(950, 1200, falseButThese(10, [0, 2, 3, 5, 6, 7, 8, 9])));
+                        o.push(staticOut(1250, 1200, falseButThese(10, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])));
+                        o.push(staticOut(650, 1500, falseButThese(10, [0, 4, 5, 6, 8, 9])));
+                        o.push(staticOut(1250, 1500, falseButThese(10, [0, 1, 2, 3, 4, 7, 8, 9])));
+                        o.push(staticOut(650, 1800, falseButThese(10, [0, 2, 3, 4, 5, 6, 8, 9])));
+                        o.push(staticOut(950, 1800, falseButThese(10, [2, 3, 4, 5, 6, 8, 9])));
+                        o.push(staticOut(1250, 1800, falseButThese(10, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])));
+                        o.push(staticOut(650, 2100, falseButThese(10, [0, 2, 6, 8])));
+                        o.push(staticOut(1250, 2100, falseButThese(10, [0, 1, 3, 4, 5, 6, 7, 8, 9])));
+                        o.push(staticOut(650, 2400, falseButThese(10, [0, 2, 3, 5, 6, 8])));
+                        o.push(staticOut(950, 2400, falseButThese(10, [0, 2, 3, 5, 6, 8, 9])));
+                        o.push(staticOut(1250, 2400, falseButThese(10, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])));
+                    }
+                }
+            ];
+
+
+            levels[currentLevel].load();
+
+
+            //initiate loop
+            loop();
+        </script>
+
+
+    </body>
+
+
+</html>

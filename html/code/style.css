@@ -1,0 +1,9 @@
+body {
+    margin: 0px;
+    padding: 0px;
+}
+
+textarea {
+    width: 512px;
+    height: 512px;
+}
