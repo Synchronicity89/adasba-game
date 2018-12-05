@@ -83,7 +83,7 @@ function render() {
 
       //rays emmitted from player in all directions
       var vrays = vecRay(p.x, p.y - 12, chunks);
-      
+
       //make visible space fully visible
       var grd = lctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 150);
       grd.addColorStop(0, "#FFFFFFFF");
@@ -223,9 +223,9 @@ function render() {
 
     //draw entities
     o.forEach(function (e) {
-      if (pyth(e.x, e.y, p.x + moveShift.x, p.y + moveShift.y) < 400) {
+      //if (pyth(e.x, e.y, p.x + moveShift.x, p.y + moveShift.y) < 400) {
         e.draw();
-      }
+      //}
     });
 
     //end translation of layers

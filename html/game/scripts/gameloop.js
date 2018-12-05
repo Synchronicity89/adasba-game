@@ -4,7 +4,7 @@ var p = {
     dx: 0,
     dy: 0,
     mhp: 100,
-    hp: 100
+    hp: -1
 };
 
 var spawn = {
@@ -51,8 +51,8 @@ function getLinesFromObjects(x, y) {
                       y: o[i].hitbox[i2].start.y + o[i].y
                   },
                   end: {
-                      x: o[i].hitbox[i2].end.x + o[i].x + 0.00001,
-                      y: o[i].hitbox[i2].end.y + o[i].y + 0.00001
+                      x: o[i].hitbox[i2].end.x + o[i].x + 0.0000001,
+                      y: o[i].hitbox[i2].end.y + o[i].y + 0.0000001
                   },
                   type: "solid",
                   ray: "solid",
@@ -103,14 +103,24 @@ function testCollidePoint(x, y, dx, dy, line) {
   between(y + dy, line.start.y, line.end.y)))
 }
 
-
+function diagonalSquareQuadrant(x, y) {
+  if (y < -Math.abs(x - 0.5) + 0.5) {
+    return 3;
+  }
+  if (y > Math.abs(x - 0.5) + 0.5) {
+    return 1;
+  }
+  if (x > 0.5) {
+    return 0;
+  }
+  return 2;
+}
 
 
 loadChunk(0, 0);
 
 console.log(chunks);
 function gameLoop() {
-
 
   time1 = new Date().getTime();
 
@@ -200,6 +210,34 @@ function gameLoop() {
         }
       }
     }
+    // for (var i = Math.floor(p.y / 16) - 1; Math.ceil(p.y / 16) + 1 > i; i++) {
+    //   for (var i2 = Math.floor(p.x / 16) - 1; Math.ceil(p.x / 16) + 1 > i2; i2++) {
+    //     if (cgrid[i][i2].state && inRect(i2 * 16 - 8, i * 16, 32, 32, p.x + p.dx, p.y + p.dy)) {
+    //       console.log("a");
+    //       var qd = diagonalSquareQuadrant((p.x - i2 * 16) / 16, (p.y - i * 16) / 16);
+    //       console.log(qd);
+    //       if (qd == 0) {
+    //         p.x -= p.dx;
+    //         p.dx *= -0.1;
+    //       }
+    //       if (qd == 1) {
+    //         p.y -= p.dy;
+    //         p.dy *= -0.1;
+    //       }
+    //       if (qd == 2) {
+    //         p.x -= p.dx;
+    //         p.dx *= -0.1;
+    //       }
+    //       if (qd == 3) {
+    //         p.y -= p.dy;
+    //         p.dy *= -0.1;
+    //         if ((k[87] || k[32])) {
+    //           p.dy = -6;
+    //         }
+    //       }
+    //     }
+    //   } 
+    // }
 
     o.forEach(function (e, i) {
       e.frame();

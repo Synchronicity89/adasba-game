@@ -29,10 +29,10 @@ function ray(x, y, dir, chunk, arr, bounce, draw) {
     var intersects = [];
     for (var i = 0; chunk.length > i; i++) {
         if (chunk[i].start.x == chunk[i].end.x) {
-            chunk[i].end.x += 0.00001;
+            chunk[i].end.x += 0.0000001;
         }
         if (chunk[i].start.y == chunk[i].end.y) {
-            chunk[i].end.y -= 0.00001;
+            chunk[i].end.y -= 0.0000001;
         }
         var c = (chunk[i].start.y - chunk[i].end.y) / (chunk[i].start.x - chunk[i].end.x);
         var d = -((chunk[i].start.y - chunk[i].end.y) / (chunk[i].start.x - chunk[i].end.x)) * chunk[i].start.x + chunk[i].start.y;
@@ -87,10 +87,10 @@ function simpleRay(x, y, dir, chunk, pointedTo, type2) {
     var intersects = [];
     for (var i = 0; chunk.length > i; i++) {
         if (chunk[i].start.x == chunk[i].end.x) {
-            chunk[i].end.x += 0.00001;
+            chunk[i].end.x += 0.0000001;
         }
         if (chunk[i].start.y == chunk[i].end.y) {
-            chunk[i].end.y += 0.00001;
+            chunk[i].end.y += 0.0000001;
         }
         var c = (chunk[i].start.y - chunk[i].end.y) / (chunk[i].start.x - chunk[i].end.x);
         var d = -((chunk[i].start.y - chunk[i].end.y) / (chunk[i].start.x - chunk[i].end.x)) * chunk[i].start.x + chunk[i].start.y;
@@ -166,10 +166,10 @@ function laserray(x, y, dir, chunk, arr, bounce, draw, chunk2) {
     }
     for (var i = 0; chunk3.length > i; i++) {
         if (chunk3[i].start.x == chunk3[i].end.x) {
-            chunk3[i].end.x += 0.00001;
+            chunk3[i].end.x += 0.0000001;
         }
         if (chunk3[i].start.y == chunk3[i].end.y) {
-            chunk3[i].end.y -= 0.00001;
+            chunk3[i].end.y -= 0.0000001;
         }
         var c = (chunk3[i].start.y - chunk3[i].end.y) / (chunk3[i].start.x - chunk3[i].end.x);
         var d = -((chunk3[i].start.y - chunk3[i].end.y) / (chunk3[i].start.x - chunk3[i].end.x)) * chunk3[i].start.x + chunk3[i].start.y;
@@ -269,10 +269,10 @@ function laserray2(x, y, dir, chunk, arr, bounce, draw, chunk2) {
         }
         for (var i = 0; chunk3.length > i; i++) {
             if (chunk3[i].start.x == chunk3[i].end.x) {
-                chunk3[i].end.x += 0.00001;
+                chunk3[i].end.x += 0.0000001;
             }
             if (chunk3[i].start.y == chunk3[i].end.y) {
-                chunk3[i].end.y -= 0.00001;
+                chunk3[i].end.y -= 0.0000001;
             }
             var c = (chunk3[i].start.y - chunk3[i].end.y) / (chunk3[i].start.x - chunk3[i].end.x);
             var d = -((chunk3[i].start.y - chunk3[i].end.y) / (chunk3[i].start.x - chunk3[i].end.x)) * chunk3[i].start.x + chunk3[i].start.y;

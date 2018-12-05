@@ -221,11 +221,11 @@ function simpleLaserDamage(x, y, dir) {
     var lRay = laserray2(x, y, dir + Math.PI * 2, chunks, lRay, 4, {}, [
         {
             x: p.x,
-            y: p.y - 8,
+            y: p.y - 6,
             hitbox: [
                 {
                     obstacleType: "circle",
-                    radius: 8,
+                    radius: 6,
                     x: 0,
                     y: 0
                 }
@@ -258,11 +258,11 @@ function SecurityLaser(x, y, f) {
         var lRay = laserray2(this.x, this.y, this.dir + Math.PI * 2, chunks, lRay, 4, {}, [
             {
                 x: p.x,
-                y: p.y - 8,
+                y: p.y - 9,
                 hitbox: [
                     {
                         obstacleType: "circle",
-                        radius: 8,
+                        radius: 5,
                         x: 0,
                         y: 0
                     }

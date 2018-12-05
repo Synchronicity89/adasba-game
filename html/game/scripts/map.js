@@ -89,7 +89,8 @@ for (var i = 0; 10 > i; i++) {
 }
 
 var mapEventTriggers = {
-    bossOneComplete: false
+    bossOneComplete: false,
+    thirtyFiveTogglePuzzleComplete: false
 };
 
 map.events[0][0].load = function () {
@@ -141,8 +142,12 @@ for (var i = 0; 50 > i; i++) {
     }
 }
 
-function lastObj() {
-    return o[o.length - 1];
+function lastObj(a, b) {
+    if (a == undefined) {
+        return o[o.length - 1];
+    } else {
+        return o[o.length - (b - a)];
+    }
 }
 
 map.events[1][0].load = function () {
@@ -365,6 +370,80 @@ map.events[3][0].load = function () {
     }));
 }
 
+map.events[3][3].load = function () {
+    o.push(new SecurityLaser(1456, 1553, function (a) {
+        return {
+            dir: Math.PI * 0.4999,
+            x: 1456 + 280 * Math.sin(a / 300),
+            y: 1553
+        };
+    }));
+    o.push(new SecurityLaser(1456, 1553, function (a) {
+        return {
+            dir: Math.PI * 0.4999,
+            x: 1456 + 280 * Math.sin(a / 300 + Math.PI),
+            y: 1553
+        };
+    }));
+    o.push(new SecurityLaser(1456, 1553, function (a) {
+        return {
+            dir: Math.PI * 1.4999,
+            x: 1456 + 280 * Math.sin(a / 300 + Math.PI * 0.5),
+            y: 2031
+        };
+    }));
+    o.push(new SecurityLaser(1456, 1553, function (a) {
+        return {
+            dir: Math.PI * 1.4999,
+            x: 1456 + 280 * Math.sin(a / 300 + Math.PI * 1.5),
+            y: 2031
+        };
+    }));
+    o.push(new SecurityLaser(1456, 1553, function (a) {
+        return {
+            dir: Math.PI,
+            x: 1775,
+            y: 1792 + 192 * Math.sin(a / 600 + Math.PI)
+        };
+    }));
+    for (var i = 0; 5 > i; i++) {
+        for (var i2 = 0; 7 > i2; i2++) {
+            o.push(new Toggle(1216 + i2 * 80, 1616 + i * 80, "1", "0", function () {}, function () {}, true));
+            lastObj().toggleTag3 = true;
+        }
+    }
+    lastObj(0, 35).x -= 16;
+    lastObj(6, 35).x -= 16;
+    lastObj(11, 35).x -= 16;
+    lastObj(23, 35).x -= 16;
+    lastObj(28, 35).x -= 16;
+    lastObj(32, 35).x -= 16;
+    lastObj(34, 35).x -= 16;
+}
+
+map.events[3][3].frame = function () {
+    var togglemap = [
+        true, false, false, false, true, false, true, 
+        true, false, false, false, true, false, true, 
+        false, false, false, false, false, false, false, 
+        true, false, true, false, true, false, false, 
+        true, false, true, false, true, true, true
+    ];
+    var toggleCondition = true;
+    var toggles = [];
+    for (var i = 0; o.length > i; i++) {
+        if (o[i].toggleTag3) {
+            toggles.push(o[i]);
+        }
+    }
+    for (var i = 0; toggles.length == 35 && toggles.length > i; i++) {
+        toggleCondition = toggleCondition && (toggles[i].state == togglemap[i]);
+    }
+    if (toggleCondition) {
+        console.log("a");
+    }
+}
+
 function doToRect(arr, x, y, w, h, f) {
     for (var i = y; y + h > i; i++) {
         for (var i2 = x; x + w > i2; i2++) {
@@ -372,8 +451,6 @@ function doToRect(arr, x, y, w, h, f) {
         }
     }
 }
-
-
 
 var getjson = new XMLHttpRequest();
 

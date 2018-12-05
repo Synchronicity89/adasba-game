@@ -36,6 +36,26 @@ function vecRay(x, y, lines) {
         }
     });
 
+    if (vRays[0]) {
+        var numTouchLine = 0;
+        var whichLine = vRays[0].lineIndex;
+        for (var i = 0; vRays.length > i; i++) {
+            if (whichLine == vRays[i].lineIndex) {
+                numTouchLine++;
+            } else {
+                var whichLine = vRays[i].lineIndex;
+                if (numTouchLine > 2) {
+                    for (var i2 = 0; numTouchLine - 2 > i2; i2++) {
+                        vRays.splice(i - numTouchLine + 1, 1);
+                    }
+                    i = -1;
+                }
+                numTouchLine = 0;
+
+            }
+        }
+    }
+
     for (var i = 0; vRays.length > i; i++) {
         lineRanges.push({
             start: vRays[i],
