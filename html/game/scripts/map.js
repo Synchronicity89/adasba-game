@@ -454,7 +454,7 @@ function doToRect(arr, x, y, w, h, f) {
 
 var getjson = new XMLHttpRequest();
 
-getjson.open("GET", "http://50.39.110.171:42069/html/game/map2.json");
+getjson.open("GET", "map2.json");
 
 getjson.send();
 
@@ -468,7 +468,7 @@ var backgroundTiles = [];
 
 var getjson2 = new XMLHttpRequest();
 
-getjson2.open("GET", "http://50.39.110.171:42069/html/game/background.json");
+getjson2.open("GET", "background.json");
 
 getjson2.send();
 
