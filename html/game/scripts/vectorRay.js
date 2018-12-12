@@ -1,3 +1,4 @@
+//simple vector ray, currently unused
 function simpleVecRay(x, y, lines) {
     var lightRestrictions = [];
     for (var i = 0; lines.length > i; i++) {
@@ -11,23 +12,30 @@ function simpleVecRay(x, y, lines) {
     return lightRestrictions;
 }
 
+//complex vector ray, currently used
 function vecRay(x, y, lines) {
+
+    //results of all rays
     var vRays = [];
     var vRays2 = [];
     var lineRanges = [];
+
+    //create rays to the left and right of each vertex of the line segments
     lines.forEach(function (e, i) {
         vRays.push(simpleRay(x, y, Math.atan2(e.start.y - y, e.start.x - x) + 0.001 + Math.PI * 2, lines, e, e.start));
         vRays.push(simpleRay(x, y, Math.atan2(e.end.y - y, e.end.x - x) + 0.001 + Math.PI * 2, lines, e, e.end));
         vRays.push(simpleRay(x, y, Math.atan2(e.start.y - y, e.start.x - x) - 0.001 + Math.PI * 2, lines, e, e.start));
         vRays.push(simpleRay(x, y, Math.atan2(e.end.y - y, e.end.x - x) - 0.001 + Math.PI * 2, lines, e, e.end));
     });
+
+    //remove undefineds
     vRays.forEach(function (e) {
         if (e == undefined || e.lineIndex == undefined) {
             vRays.splice(e);
         }
     });
 
-
+    //sort vector rays by direction
     vRays.sort(function (a, b) {
         if (a.dir != b.dir) {
             return a.dir - b.dir;
@@ -36,6 +44,7 @@ function vecRay(x, y, lines) {
         }
     });
 
+    //eliminate the "center rays" of cases where three or more consecutive rays touch the same line
     if (vRays[0]) {
         var numTouchLine = 0;
         var whichLine = vRays[0].lineIndex;
@@ -56,6 +65,7 @@ function vecRay(x, y, lines) {
         }
     }
 
+    //format data so it can be turned into a polyline
     for (var i = 0; vRays.length > i; i++) {
         lineRanges.push({
             start: vRays[i],

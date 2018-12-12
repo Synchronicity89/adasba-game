@@ -1,3 +1,4 @@
+//move screen smoothly
 moveShift2 = {
   x: 0,
   y: 0
@@ -8,15 +9,18 @@ moveShift = {
   y: 0
 };
 
+//toggles for lighting and rendering settings
 var generateLightPaths = true;
 
 var generateFluorescence = false;
 
 var generateSonarPings = false;
 
+//camera display (rogue robot thing) (currently doesn't work)
 var cameraDisplay = document.createElement("canvas");
 var cameraContext = cameraDisplay.getContext("2d");
 
+//frame skipping to prevent game from being slow
 var loopTime = 0;
 
 var time1 = 0;
@@ -126,7 +130,8 @@ function render() {
     //laser
     if (m.m[0] && l % 4 < 2) {
         var laser = laserray2(p.x, p.y - 12, Math.atan2(m.y - 216 / 2 + 12 - moveShift.y, m.x - 384 / 2 - moveShift.x) + Math.PI * 2, chunks, laser, 4, {}, o);
-
+  
+    
         ctx.strokeStyle = "#9000FF11";
         for (var i2 = 0; 4 > i2; i2++) {
             ctx.lineWidth = i2 * 6 + 6;
@@ -163,8 +168,14 @@ function render() {
           if (generateFluorescence) {
             o.push(new FluorescentSpark(sparkSource.x + Math.cos(Math.atan2(sparkSource.sy - sparkSource.y, sparkSource.sx - sparkSource.x)), sparkSource.y + Math.sin(Math.atan2(sparkSource.sy - sparkSource.y, sparkSource.sx - sparkSource.x)), Math.random() * 3 - 1.5, Math.random() * 3 - 1.5, Math.random() * 300 + 300));
           }
+          if (m.m[0] && l % 28 == 0) {
+            var audio = new Audio('sounds/laser.wav');
+            audio.volume = clamp(45 / pyth(p.x, p.y, sparkSource.x, sparkSource.y), 0, 1);
+            audio.play();
+          }
         }
     }
+
 
     if (generateSonarPings && l % 13 == 0) {
       for (var i = 0; 100 > i; i++) {

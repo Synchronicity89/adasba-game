@@ -1,3 +1,4 @@
+//literally indexOf but with ===
 function indexOfObj(arr, obj) {
     for (var i = 0; arr.length > i; i++) {
         if (arr[i] === obj) {
@@ -7,6 +8,7 @@ function indexOfObj(arr, obj) {
     return false;
 }
 
+//exports game map as json (deprecated)
 function exportMap() {
     var map2 = JSON.parse(JSON.stringify(map));
     //console.log(map2);
@@ -18,6 +20,7 @@ function exportMap() {
     return JSON.stringify(map2);
 }
 
+//imports json game map (deprecated)
 function importMap(mapImport) {
     var map2 = JSON.parse(mapImport);
     doToRect(map2.tiles, 0, 0, 50, 50, function (e, i, i2) {

@@ -1,3 +1,4 @@
+//player info
 var p = {
     x: 192,
     y: 108,
@@ -7,6 +8,7 @@ var p = {
     hp: -1
 };
 
+//player spawn point
 var spawn = {
   x: 192,
   y: 108,
@@ -16,14 +18,17 @@ var spawn = {
   hp: 100
 };
 
+//global time variable
 var l = 0;
 
+//deprecated "ray fan" function
 function rayFan(x, y, dir, chunk, arr, bounce, draw, angle, number) {
   for (var i = 0; number > i; i++) {
     arr.push(ray(x, y, dir - angle / 2 + angle * (i / number) + Math.PI * 2, chunk, arr, bounce, draw));
   }
 }
 
+//I don't remember this
 function getLinesFromObjects(x, y) {
   var chunks3 = [];
     for (var i = 0; o.length > i; i++) {
@@ -65,8 +70,10 @@ function getLinesFromObjects(x, y) {
   return chunks3;
 }
 
+//weird old television shifting effect
 var shifts = [];
 
+//load noise/static effect
 var noise = new ImageData(1920, 1080);
 for (var i = 0; noise.data.length > i; i += 4) {
   var rand = Math.floor(Math.random() * 256);
@@ -76,13 +83,13 @@ for (var i = 0; noise.data.length > i; i += 4) {
   noise.data[i + 3] = Math.floor(Math.pow(Math.random(), 3) * 48);
 }
 
-
+//forgot
 var tc = document.createElement("canvas");
 var tctx = tc.getContext("2d");
 tc.width = 384;
 tc.height = 216;
 
-
+//adds noise to canvas
 var noisec = document.createElement("canvas");
 var noisectx = noisec.getContext("2d");
 noisec.width = 1920;
@@ -93,7 +100,7 @@ var alt = Math.random();
 
 var bakedRays = [];
 
-
+//given a position and a velocity, does an object collide with a given line?
 function testCollidePoint(x, y, dx, dy, line) {
   var lineEq = twoPointsToSlopeIntercept(line.start.x, line.start.y, line.end.x, line.end.y);
   return ((lineEq.m * x + lineEq.b > y) == (lineEq.m * (x + dx) + lineEq.b <= y + dy) && 
@@ -103,6 +110,7 @@ function testCollidePoint(x, y, dx, dy, line) {
   between(y + dy, line.start.y, line.end.y)))
 }
 
+//tests for what "diagonal quadrant" of a square something is in (these quadrants are formed by connecting lines from the center of the square to the corners, creating isoceles triangles)
 function diagonalSquareQuadrant(x, y) {
   if (y < -Math.abs(x - 0.5) + 0.5) {
     return 3;
@@ -116,29 +124,35 @@ function diagonalSquareQuadrant(x, y) {
   return 2;
 }
 
-
+//load starting chunk
 loadChunk(0, 0);
 
 console.log(chunks);
+
+//game loop function that does all player and entitiy physics and everything
 function gameLoop() {
 
+  //get time to calculate frame lag (and skip frames if too slow)
   time1 = new Date().getTime();
 
+  //useless and deprecated
   if (l % 100 == 0) {
     bakedRays = [];
   }
 
-
+  //load all nearby chunks
   for (var i = clamp(Math.floor(p.y / 512) - 1, 0, 9); clamp(Math.floor(p.y / 512) + 2, 0, 9) > i; i++) {
     for (var i2 = clamp(Math.floor(p.x / 512) - 1, 0, 9); clamp(Math.floor(p.x / 512) + 2, 0, 9) > i2; i2++) {
       loadChunk(i2, i);
     }
   }
 
+  //unload all irrelevant chunks every 50 frames
   if (l % 50 == 0) {
     unload();
   }
 
+  //execute chunk frame functions (functions which happen every frame) for all loaded chunks
   for (var i = 0; loadedChunks.length > i; i++) {
     if (map.events[loadedChunks[i].y][loadedChunks[i].x].frame != undefined) {
       map.events[loadedChunks[i].y][loadedChunks[i].x].frame();
@@ -146,7 +160,11 @@ function gameLoop() {
   }
 
   alt = Math.random();
+
+    //increment global time
     l++
+
+    //move player by its velocity, then add to velocity via user input (wasd)
     p.x += p.dx;
     p.y += p.dy;
     if (k[83]) {
@@ -167,15 +185,21 @@ function gameLoop() {
           p.dx += 0.4;
       }
     }
+
+    //function that allows player to be moved by another object without breaking the collision detection
     o.forEach(function(e) {
       if (e.frameMove) {
         e.frameMove();
       }
     });
 
+    //exponential decay of x velocity
     p.dx *= 0.9;
-
+    
+    //gravity
     p.dy += 0.2;
+
+    //collision detection
     for (var i = 0; chunks.length > i; i++) {
       if (chunks[i].start.x == chunks[i].end.x) {
         chunks[i].end.x += 0.00001;
@@ -239,10 +263,12 @@ function gameLoop() {
     //   } 
     // }
 
+    //movement function (not drawing) that occurs every frame for an entity
     o.forEach(function (e, i) {
       e.frame();
     });
 
+    //kill entities
     for (var i = 0; o.length > i; i++) {
       if (o[i].hp < 0) {
         o[i].death();
@@ -251,6 +277,7 @@ function gameLoop() {
       }
     }
 
+    //kill players
     if (p.hp < 0) {
       p = JSON.parse(JSON.stringify(spawn));
       loadedChunks = [];
@@ -258,10 +285,14 @@ function gameLoop() {
       o = [];
     }
 
+    //reset single-press keys
     for (var i = 0; kD.length > i; i++) {
       kD[i] = false;
     }
 
+
+
+    //if the game is fine, render, but if the game is lagging, don't
     if (loopTime < 1000 / 60) {
       render();
     } else {

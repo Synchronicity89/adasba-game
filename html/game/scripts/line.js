@@ -1,3 +1,4 @@
+//gets rgba of a pixel in image data
 function getChannels(arr, x, y, w, h) {
     return {
         r: arr[(x + w * y) * 4],
@@ -7,6 +8,7 @@ function getChannels(arr, x, y, w, h) {
     };
 }
 
+//takes an html img image, and outputs imageData
 function imageDataFromImage(img, w, h) {
     var imagecanvas = document.createElement("canvas");
     var imagecontext = imagecanvas.getContext("2d");
@@ -16,6 +18,7 @@ function imageDataFromImage(img, w, h) {
     return (imagecontext.getImageData(0, 0, w, h));
 }
 
+//get lines from an image (in this case the deprecated image-to-line system)
 function linesFromImage(img, w, h, l) {
     var lines = [];
     var iLD = [];
@@ -69,6 +72,7 @@ function linesFromImage(img, w, h, l) {
     return lines;
 }
 
+//sorts lines by position into two dimensional array of 512x512 squares (chunks)
 function sortLinesByChunk(lines) {
     var lines2 = [];
     var lines3 = [];
@@ -127,6 +131,8 @@ function floodFill(x, y, arr) {
                     });
                 }
             }
+            filled.splice(i, 1);
+            i--;
         }
     }
     return arr;
@@ -219,7 +225,7 @@ function sharesPointAndSlope(line1, line2) {
 //join the lines and stuff i guess
 function joinConnectedLinesWithSameSlope(arr) {
     for (var i = 0; arr.length > i; i++) {
-        for (var i2 = 0; arr.length > i2; i2++) {
+        for (var i2 = i; arr.length > i2; i2++) {
             if (i != i2 && sharesPointAndSlope(arr[i], arr[i2])) {
                 if (arr[i2].start.x == arr[i].end.x && arr[i2].start.y == arr[i].end.y) {
                     arr.push({
@@ -250,8 +256,18 @@ function joinConnectedLinesWithSameSlope(arr) {
                 }
                 arr.splice(i2, 1);
                 arr.splice(i, 1);
-                i2 = 0;
-                i = 0;
+                i2 -= 2;
+                i -= 1;
+                if (i2 < 0) {
+                    i2 = -1;
+                }
+                if (i < 0) {
+                    if (i2 == arr.length) {
+                        i = -1;
+                    } else {
+                        i = 0;
+                    }
+                }
             }
         }
     }
@@ -342,9 +358,9 @@ function imageDataToGrid(data, w, h) {
 var linegrid = wsrc("linegrid.png");
 var cgrid = []
 linegrid.onload = function () {
-    map.lines[0][0] = joinConnectedLinesWithSameSlope(makeLinesFromFloodFillIntersection(floodFill(5, 5, imageDataToGrid(imageDataFromImage(linegrid, 240, 136).data, 240, 136))));
+    map.lines[0][0] = joinConnectedLinesWithSameSlope(makeLinesFromFloodFillIntersection(floodFill(5, 5, imageDataToGrid(imageDataFromImage(linegrid, 480, 272).data, 480, 272))));
     map.lines = sortLinesByChunk(map.lines);
-    cgrid = imageDataToGrid(imageDataFromImage(linegrid, 240, 136).data, 240, 136);
+    cgrid = imageDataToGrid(imageDataFromImage(linegrid, 480, 272).data, 480, 272);
     setTimeout(function () {
         gameLoop();
     }, 1000);

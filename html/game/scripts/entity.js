@@ -1059,3 +1059,10 @@ function Boss1(x, y) {
         }
     ];
 }
+
+function Gun(x, y, range, angle) {
+    this.range = range;
+    this.angle = angle;
+    this.x = x;
+    this.y = y;
+}

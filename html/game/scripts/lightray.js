@@ -12,6 +12,7 @@
 // lc2.width = c.width;
 // lc2.height = c.height;
 
+//does some stuff with the signs to make sure rays act as *rays* and not *lines* (two directions vs one)
 function signTest(dir) {
     if (dir > Math.PI / 2 && dir < 3 * Math.PI / 2) {
         return -1;
@@ -19,6 +20,7 @@ function signTest(dir) {
     return 1;
 }
 
+//regular ol' ray (no idea if this is used anymore, very outdated and badly coded)
 function ray(x, y, dir, chunk, arr, bounce, draw) {
     var bounces = bounce;
     if (bounce === undefined) {
@@ -81,21 +83,34 @@ function ray(x, y, dir, chunk, arr, bounce, draw) {
     }
 }
 
+//simpler ray used for "vector raycasting" (the screen bacokground)
 function simpleRay(x, y, dir, chunk, pointedTo, type2) {
+    
+    //get slope and y intercept of ray
     var m = Math.tan(dir);
     var b = -m * x + y;
+
+    //stores all intersections
     var intersects = [];
     for (var i = 0; chunk.length > i; i++) {
+
+        //prevents dividing by zero errors by slightly offsetting lines
         if (chunk[i].start.x == chunk[i].end.x) {
             chunk[i].end.x += 0.0000001;
         }
         if (chunk[i].start.y == chunk[i].end.y) {
             chunk[i].end.y += 0.0000001;
         }
+
+        //calculate line intersection
         var c = (chunk[i].start.y - chunk[i].end.y) / (chunk[i].start.x - chunk[i].end.x);
         var d = -((chunk[i].start.y - chunk[i].end.y) / (chunk[i].start.x - chunk[i].end.x)) * chunk[i].start.x + chunk[i].start.y;
         var xintersect = (b - d) / (c - m);
+
+        //if the ray actually intersects with the line segment (rather than "intersecting" outside of it or intersecting the wrong direction), execute the code inside the if statement
         if ((between(xintersect, chunk[i].start.x, chunk[i].end.x) && between(m * xintersect + b, chunk[i].start.y, chunk[i].end.y)) && (Math.sign(xintersect - x) == signTest((dir) % (Math.PI * 2)))) {
+
+            //if the line segment is solid or reflects rays, add an intersection to the array of intersections
             if (chunk[i].ray == "solid" || chunk[i].ray == "reflect") {
                 intersects.push({
                     dist: pyth(x, y, xintersect, m * xintersect + b),
@@ -114,6 +129,8 @@ function simpleRay(x, y, dir, chunk, pointedTo, type2) {
             }
         }
     }
+
+    //find intersect with lowest distance to ray origin
     var minDist = 9999999;
     var minDistIndex = 0;
     for (var i = 0; intersects.length > i; i++) {
@@ -122,6 +139,8 @@ function simpleRay(x, y, dir, chunk, pointedTo, type2) {
             minDistIndex = i;
         }
     }
+
+    //eliminate undefined cases
     if (intersects[minDistIndex] != undefined) {
         if (intersects[minDistIndex].type == "solid" || intersects[minDistIndex].type == "reflect") {
             return intersects[minDistIndex];
@@ -135,6 +154,7 @@ function simpleRay(x, y, dir, chunk, pointedTo, type2) {
     }
 }
 
+//deprecated "laser ray" function for the security lasers and similar entities
 function laserray(x, y, dir, chunk, arr, bounce, draw, chunk2) {
     var bounces = bounce;
     if (bounce === undefined) {
@@ -219,20 +239,37 @@ function laserray(x, y, dir, chunk, arr, bounce, draw, chunk2) {
     }
 }
 
+//current laser ray function used for whatever constitutes a "laser ray"
 function laserray2(x, y, dir, chunk, arr, bounce, draw, chunk2) {
+
+    //contains all of the rays that make up the "laser ray" (since reflections make it bounce, an array is needed)
     var returnArray = [];
+
+    //number of bounces to calculate
     var bounces = bounce;
     if (bounce === undefined) {
         var bounces = 15;
     }
     for (var i3 = 0; bounce > i3; i3++) {
+
+        //calculate slope and y intercept of ray
         var m = Math.tan(dir);
         var b = -m * x + y;
+
+        //variable that stores intersections
         var intersects = [];
+
+        //stores all lines
         var chunk3 = [];
+
+        //adds lines from map into stored lines
         chunk3 = chunk3.concat(chunk);
+
+        //add all additional lines specified by "chunk2" (entities for example)
         for (var i = 0; chunk2.length > i; i++) {
             for (var i2 = 0; chunk2[i].hitbox.length > i2; i2++) {
+
+                //convert circle to line
                 if (chunk2[i].hitbox[i2].obstacleType == "circle") {
                     chunk3.push({
                         start: {
@@ -249,6 +286,8 @@ function laserray2(x, y, dir, chunk, arr, bounce, draw, chunk2) {
                         player: chunk2[i].player
                     });
                 }
+
+                //convert line to... line, I guess
                 if (chunk2[i].hitbox[i2].obstacleType == "line") {
                     chunk3.push({
                         start: {
@@ -267,6 +306,8 @@ function laserray2(x, y, dir, chunk, arr, bounce, draw, chunk2) {
                 }
             }
         }
+
+        //same old stuff from simpleRay (though more data is returned)
         for (var i = 0; chunk3.length > i; i++) {
             if (chunk3[i].start.x == chunk3[i].end.x) {
                 chunk3[i].end.x += 0.0000001;
@@ -304,10 +345,13 @@ function laserray2(x, y, dir, chunk, arr, bounce, draw, chunk2) {
             }
         }
         if (intersects[minDistIndex]) {
+            //return the whole thing if the line segment is solid
             if (intersects[minDistIndex].type == "solid") {
                 returnArray.push(intersects[minDistIndex]);
                 return returnArray;
             } else if (intersects[minDistIndex].type == "reflect") {
+
+                //calculate reflection bounce
                 if (bounces > 1) {
                     returnArray.push(intersects[minDistIndex]); //Math.atan2(intersects[minDistIndex].line.start.y - intersects[minDistIndex].line.end.y, intersects[minDistIndex].line.start.x - intersects[minDistIndex].line.end.x)
                     var lineAngle = Math.atan2(intersects[minDistIndex].line.start.y - intersects[minDistIndex].line.end.y, intersects[minDistIndex].line.start.x - intersects[minDistIndex].line.end.x);
