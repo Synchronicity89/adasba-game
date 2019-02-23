@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <audio src="http://50.39.110.171:42069/image/tRap2.wav" id="audio" controls></audio>
+        <canvas width="1920" height="1080" style="position:absolute;top:0px;left:0px;width:100%;height:100%;z-index:-1;" id="canvas">
+
+        </canvas>
+        <input id="audioLink" value="link to audio file here...">
+        <button onclick="updateAudio()">Update Audio</button>
+        <select id="visualizer">
+            <option value="thinBar">Thin Bars</option>
+            <option value="thickBar">Thicc Bars</option>
+            <option value="thickRadial">Thicc Radial Bars</option>
+            <option value="juliaSet">Julia Set Fractal</option>
+        </select>
+        <script>
+            function updateAudio() {
+                audio.src = audioLink.value;
+            }
+            function polyInterpolate(value, max, power) {
+                return Math.pow(value / max, power) * max;
+            }
+            
+
+
+            function juliaRect(x, y, w, h, iterations, resx, resy, real, imaginary) {
+                var mData = [];
+                for (var i = 0; resy > i; i++) {
+                    mData.push([]);
+                    for (var i2 = 0; resx > i2; i2++) {
+                        mData[i].push({
+                            iterations: 0,
+                            path: [{ x: x + i2 * (w / resx), y: y + i * (h / resy) }],
+                            in: true,
+                            pos: { x: x + i2 * (w / resx), y: y + i * (h / resy) }
+                        });
+                        for (var i3 = 0; iterations > i3; i3++) {
+                            mData[i][i2].path.push({
+                                x: Math.pow(mData[i][i2].path[i3].x, 2) - Math.pow(mData[i][i2].path[i3].y, 2) + real,
+                                y: 2 * mData[i][i2].path[i3].x * mData[i][i2].path[i3].y + imaginary
+                            });
+                            if (Math.sqrt(Math.pow(mData[i][i2].path[i3 + 1].x, 2) + Math.pow(mData[i][i2].path[i3 + 1].y, 2)) > 2) {
+                                mData[i][i2].in = false;
+                            } else if (mData[i][i2].in) {
+                                mData[i][i2].iterations++;
+                            }
+                        }
+                    }
+                }
+                return mData;
+            }
+
+
+
+
+            var visualizers = {
+                thinBar: function() {
+                    ctx.lineCap = "round";
+                    ctx.lineWidth = 20;
+
+                    ctx.fillStyle = "#00000022";
+                    ctx.fillRect(0, 0, c.width, c.height);
+
+                    var bass = 1;
+                    for (var i = 30; 100 > i; i++) {
+                        bass += Math.floor(frequencyData[i] / 250);
+                        t += Math.round(frequencyData[i] / 400);
+                    }
+
+                    for (var i = 0; frequencyData.length > i; i++) {
+                        ctx.fillStyle = "hsl(" + (i / 15 + t) + ", 100%, 50%)";
+                        ctx.fillRect(i * 2, c.height / 2 - polyInterpolate(frequencyData[i], 256, 2.5) * bass * 2, 2, 2 * polyInterpolate(frequencyData[i], 256, 2.5) * 2 * bass);
+                    }
+                },
+                thickBar: function() {
+                    ctx.lineCap = "round";
+                    ctx.lineWidth = 20;
+
+                    ctx.fillStyle = "#00000022";
+                    ctx.fillRect(0, 0, c.width, c.height);
+
+                    var bass = 1;
+                    for (var i = 30; 100 > i; i++) {
+                        bass += Math.floor(frequencyData[i] / 250);
+                        t += Math.round(frequencyData[i] / 400);
+                    }
+
+                    for (var i = 0; Math.ceil(frequencyData.length / 20) > i; i++) {
+                    ctx.strokeStyle = "hsl(" + (i * 3 + t) + ", 100%, 80%)";
+                    //ctx.fillRect(i * 40, c.height / 2 - polyInterpolate(frequencyData[i * 20], 256, 2.5) * bass * 2, 2, 2 * polyInterpolate(frequencyData[i * 20], 256, 2.5) * 2 * bass);
+                    ctx.beginPath();
+                    ctx.moveTo(20 + i * 40, c.height / 2 - polyInterpolate(frequencyData[i * 20], 256, 2.5) * bass * 2);
+                    ctx.lineTo(20 + i * 40, c.height / 2 + polyInterpolate(frequencyData[i * 20], 256, 2.5) * bass * 2);
+                    ctx.stroke();
+                }
+                },
+                thickRadial: function() {
+                ctx.fillStyle = "#000000FF";
+                ctx.fillRect(0, 0, c.width, c.height);
+                ctx.lineWidth = 10;
+                ctx.lineCap = "round";
+                for (var i = 0; frequencyData.length > i; i++) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = "hsl(" + (i / 7 + t / 5) + ", 100%, 50%)";
+                    ctx.moveTo(c.width / 2, c.height / 2);
+                    ctx.lineTo(c.width / 2 + Math.cos(i / frequencyData.length * Math.PI * 6) * polyInterpolate(frequencyData[i], 256, 2.5) * 3, c.height / 2 + Math.sin(i / frequencyData.length * Math.PI * 6) * polyInterpolate(frequencyData[i], 256, 2.5) * 3);
+                    ctx.stroke();
+                }      
+                },
+                juliaSet: function() {
+                    var total = 0;
+                    var total2 = 0;
+                    for (var i = 0; frequencyData.length / 4 > i; i++) {
+                        total += frequencyData[i];
+                    }
+                    for (var i = frequencyData.length / 4; frequencyData.length > i; i++) {
+                        total2 += frequencyData[i];
+                    }
+                    var julia = juliaRect(-1.5, -1.5, 3, 3, 16, 192, 108, total / 40000 - 2, total2 / 40000 - 2);
+                    for (var i = 0; julia.length > i; i++) {
+                        for (var i2 = 0; julia[i].length > i2; i2++) {
+                            var rL = 1;
+                            for (var i3 = 0; julia[i].length > i2 + i3 && julia[i][i2].iterations == julia[i][i2 + i3].iterations; i3++) {
+                                if (julia[i][i2].iterations == julia[i][i2 + i3].iterations) {
+                                    rL++;
+                                }
+                            }
+                            ctx.fillStyle = "hsl(" + (julia[i][i2].iterations * 2) + ", 100%, " + (julia[i][i2].iterations * (100 / 16)) + "%)";
+                            ctx.fillRect(i2 * 10, i * 10, 10 * rL, 10);
+                            i2 += i3 - 1;
+                        }
+                    }
+                }
+            }
+
+
+
+
+                var t = 0;
+            var c = document.getElementById("canvas");
+            var ctx = c.getContext("2d");
+            var vizualizer = document.getElementById("vizualizer");
+            var ctx2 = new AudioContext();
+            var audio = document.getElementById('audio');
+            var audioSrc = ctx2.createMediaElementSource(audio);
+            var analyser = ctx2.createAnalyser();
+            // we have to connect the MediaElementSource with the analyser 
+            audioSrc.connect(analyser);
+            audioSrc.connect(ctx2.destination);
+            // we could configure the analyser: e.g. analyser.fftSize (for further infos read the spec)
+            
+            // frequencyBinCount tells you how many values you'll receive from the analyser
+            var frequencyData = new Uint8Array(analyser.frequencyBinCount);
+            console.log(frequencyData);
+            // we're ready to receive some data!
+            // loop
+            function renderFrame() {
+                t++;
+                // update data in frequencyData
+                analyser.getByteFrequencyData(frequencyData);
+                // render frame based on values in frequencyData
+
+                    if (visualizer.value == "thinBar") {
+                        visualizers.thinBar();      
+                    }
+                    if (visualizer.value == "thickBar") {
+                        visualizers.thickBar();      
+                    }
+                    if (visualizer.value == "thickRadial") {
+                        visualizers.thickRadial();      
+                    }
+                    if (visualizer.value == "juliaSet") {
+                        visualizers.juliaSet();      
+                    }
+
+
+
+
+                 //console.log(frequencyData);
+                 requestAnimationFrame(renderFrame);
+            }
+            //audio.play();
+            renderFrame();
+        </script>
+    </body>
+</html>

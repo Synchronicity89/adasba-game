@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style type="text/css">
+      .header {
+        margin: 0px;
+        padding: 0px;
+        width: 100%;
+        height: 30%;
+      }
+      .banner {
+        margin: 0px;
+        padding: 0px;
+        width: 100%;
+        height: 100%;
+      }
+      body {
+        margin: 0px;
+        padding: 0px;
+        background-image: url("background.png");
+      }
+      .textcontainer {
+        margin-left: 20%;
+        margin-right: 20%;
+        background: #000000BB;
+        font-family: Arial;
+        font-weight: 100;
+        color: #FFFFFF;
+        padding: 15px;
+      }
+      h1 {
+        font-size: 2em;
+      }
+      p {
+        font-size: 1.2em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <img src="banner.png" class="banner">
+    </div>
+    <div class="nav">
+      <ul>
+
+      </ul>
+    </div>
+    <div class="content">
+      <div class="textcontainer">
+        <h1>What are fractals?</h1>
+        <p>Fractals are a type of geometry often categorized by self similarity, iterated structures which repeat as you zoom into them, and infinite complexity. However, this definition is somewhat inaccurate. Admittedly, these properties are present in many fractals, but they aren't the only good definition of them. Fractals are defined by the fact that they have a fractional dimension.</p>
+        <h1>Wait... what? A <i>fractional</i> dimension?</h1>
+        <p>Yes, fractals have a fractional dimension. In other words, a dimension which isn't an integer. Let's look at a simple, one dimensional line. If we scale this line by a factor of two, its size (in this case defined by its length) will increase by a factor of two as well.</p>
+        <p>Now, let's take a look at a two dimensional square. Increase its size by a factor of two, and its size (AKA its area) will increase by a factor of four.</p>
+        <p>By now you may have guessed this, but if we scale a cube, we end up with a cube with eight times the volume of the original.</p>
+        <p>Let's try this with a fractal, in this case the koch curve shown below.</p>
+        <img src="kochcurve.png" style="width:15%;height:15%;">
+        <p>Let's try scaling it up by a factor of two.</p>
+        <img src="kochcurve.png" style="width:30%;height:30%;">
+        <p>Okay... this doesn't tell us much. What about a factor of three? Here are the two next to each other for comparison.</p>
+        <img src="kochcurve.png" style="width:15%;height:15%;">
+        <br>
+        <img src="kochcurve.png" style="width:45%;height:45%;">
+        <p>Something interesting is now obvious. Try splitting the big one into four, equally-sized pieces. You may notice that those four pieces are each the same as the original. We've just created an object, which, if scaled by a factor of three, becomes four times the size it originally was! It cannot be one dimensional, two dimensional, three dimensional, or any integer number of dimensions for that matter.</p>
+        <h1>So what <i>is</i> the dimension of the koch curve?</h1>
+        <p>We're going to have to find a formula for calculating dimension. This requires a lot more math, so I apologize if you get lost. Those who like to find patterns may have noticed that the size scales exponentially with dimension if you apply a certain scale factor. With an n dimensional object, all of those axes will increase in size, setting the resulting size to the scale factor multiplied by each dimension. If we describe it with an equation, an n dimensional object, when scaled by a factor of x, will inrease in size by a factor of x<sup>n</sup>. Therefore if we want the size s, we can calculate it with the equation s=x<sup>n</sup>.</p>
+        <p>How about we go back to the line. Let's take a line, any line. Then we scale it by a factor of two. Plug these values into the formula, and we get 2<sup>1</sup>, which is just 2. We've already concluded that it grows in size by a factor of two, so in this case the equation checks out.</p>
+        <p>Now, why not scale a cube by a factor of five? Each dimension would be multiplied by five, giving us a result with 125 times the volume of the original. The formula tells us 5<sup>3</sup>, which is 125. While these examples aren't a deductive proof that will actually prove that this formula is correct, if you think about it, it makes sense. One dimensional scales linearly, two scales quadratically, three cubically, and so on.</p>
+        <h1>What this means for the koch curve.</h1>
+        <p>We have our equation, s=x<sup>n</sup>. Right now, it calculates the size s given a dimension n and a scale factor x. What if we wanted to find the dimension (in this case, of the koch curve)? All we need to do is solve for n, which, as stated before, represents the dimension. If you remember, we scaled the koch curve by a factor of three, therefore x=3, and it ended up being four times the size it was before, so s=4. This means that, in the case of the koch curve, 4=3<sup>n</sup>. Now we just need to solve.</p>
+        <p>We can do this by taking the base 3 log of both sides, giving us log<sub>3</sub>(4)=log<sub>3</sub>(3<sup>n</sup>). Simplify, and we get log<sub>3</sub>(4)=n. This means that the dimension of the koch curve is log<sub>3</sub>(4). This resolves to approximately 1.26.</p>
+      </div>
+    </div>
+
+  </body>
+</html>

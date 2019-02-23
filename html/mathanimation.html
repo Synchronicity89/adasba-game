@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style type="text/css">
+            body {
+                margin: 0px;
+                overflow: hidden;
+            }
+            canvas {
+                margin: 0px;
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas" width="1920" height="1080"></canvas>
+        <script>
+            //canvas
+            var c = document.getElementById("canvas");
+            var ctx = c.getContext("2d");
+
+            //time in animation
+            var t = 0;
+
+            //tests if between two values
+            function between(value, a, b) {
+                if (value >= a && value < b) {
+                    return true;
+                }
+                return false;
+            }
+
+            //clamps between two values
+            function clamp(value, a, b) {
+                if (value < a) {
+                    return a;
+                }
+                if (value > b) {
+                    return b;
+                }
+                return value;
+            }
+
+            function startHoldExit(a, b, c, d, f1, f2, f3) {
+                if (between(t, a, b)) {
+                    f1()
+                } else if (between(t, b, c)) {
+                    f2()
+                } else if (between(t, c, d)) {
+                    f3()
+                }
+            }
+
+            function fadeInOut(a, b, c, d, f) {
+                if (between(t, a, b)) {
+                    f((t - a) / (b - a));
+                } else if (between(t, b, c)) {
+                    f(1);
+                } else if (between(t, c, d)) {
+                    f(1 - (t - c) / (d - c));
+                }
+            }
+
+            function polynomialEase(a, b, degree, c, d, f) {
+                if (between(t, c, d)) {
+                    f(Math.pow((t - a) / b, degree));
+                }
+            }
+
+            function exponentialEaseIn(a, b, base) {
+                if (between(t, a, b)) {
+                    return 1 - Math.pow(base, (t - a) / (b - a)) + base;
+                } else {
+                    return 0;
+                }
+            }
+
+            function exponentialEaseOut(a, b, base) {
+                if (between(t, a, b)) {
+                    return 1 - Math.pow(base, 1 - (t - a) / (b - a)) + base;
+                } else {
+                    return 0;
+                }
+            }
+
+            function sinusoidalEase(a, b) {
+                return (Math.cos(Math.PI * ((t - a) / (b - a) + 1)) + 1) / 2;
+            }
+
+            function sinEaseTwoValues(a, b, c, d) {
+                return sinusoidalEase(a, b) * (d - c) + c;
+            }
+
+            function hsla(h, s, l, a) {
+                return "hsla(" + h + "," + s + "%," + l + "%," + clamp(a, 0, 1) + ")";
+            }
+
+            function centerScaleX(value, factor) {
+                return (value - 960) * factor + 960;
+            }
+
+            function centerScaleY(value, factor) {
+                return (value - 540) * factor + 540;
+            }
+
+            function eventChain(times, functions) {
+                for (var i = 0; times.length - 1 > i; i++) {
+                    if (between(t, times[i], times[i + 1])) {
+                        functions[i]();
+                    }
+                }
+            }
+
+            function drawPointOnCenter(angle, magnitude, alpha, textalpha, everyalpha) {
+                ctx.beginPath();
+                if (everyalpha == undefined) {
+                    ctx.strokeStyle = hsla(0, 0, 70, alpha);
+                } else {
+                    ctx.strokeStyle = hsla(0, 0, 70, everyalpha);
+                }
+                ctx.arc(960, 540, magnitude, angle, angle + Math.PI * 2);
+                ctx.lineTo(960, 540);
+                ctx.stroke();
+
+                if (textalpha == undefined) {
+                    ctx.strokeStyle = hsla(0, 0, 70, alpha);
+                } else {
+                    ctx.strokeStyle = hsla(0, 0, 70, textalpha);
+                }
+                ctx.beginPath();
+                ctx.arc(960, 540, magnitude / 2.5, 0, angle, true);
+                ctx.stroke();
+
+                ctx.fillStyle = hsla(0, 0, 20, alpha);
+                ctx.beginPath();
+                ctx.arc(960 + Math.cos(angle) * magnitude, 540 + Math.sin(angle) * magnitude, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.font = "Bold 24px Courier";
+                if (textalpha == undefined) {
+                    ctx.fillStyle = hsla(0, 0, 40, alpha);
+                } else {
+                    ctx.fillStyle = hsla(0, 0, 40, textalpha);
+                }
+                ctx.fillText(Math.abs(Math.round(180 / Math.PI * -(Math.PI * 2 - (angle % (Math.PI * 2))))) + "°", magnitude / 2.5 + 970, 490);
+            }
+
+            function loop() {
+                ctx.fillStyle = "#EEEEEE";
+                ctx.fillRect(0, 0, c.width, c.height);
+
+
+
+                ctx.textAlign = "center";
+
+                //intro which just says "adasba"
+                fadeInOut(20, 100, 120, 200, function (a) {
+                    ctx.font = "Bold 72px Courier";
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    startHoldExit(20, 100, 120, 200, function () {
+                        ctx.fillText("adasba", 960, exponentialEaseIn(20, 100, 0.01) * 540);
+                    }, function () {
+                        ctx.fillText("adasba", 960, 540);
+                    }, function () {
+                        ctx.fillText("adasba", 960, exponentialEaseOut(120, 200, 0.01) * 540);
+                    });
+                });
+
+
+
+                //point
+                fadeInOut(230, 250, 10000, 10050, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.beginPath();
+                    eventChain([230, 500, 550, 570, 720, 740, 820, 900, 950, 1030, 1050, 1150, 1350, 1400, 2400, 2450, 2550, 3100, 3200, 3300, 3400, 3500, 3600, 3700, 3800, 3900, 4000, 4100, 6350, 6400, 8500], [function () {
+                        ctx.arc(960, 540, 10, 0, Math.PI * 2);
+                        ctx.fill();
+                    }, function () {
+                        var exp = exponentialEaseIn(500, 550, 0.005);
+                        ctx.strokeStyle = hsla(0, 0, 70, exp);
+                        ctx.arc(960, 540, 250 * exp, Math.PI / -3, Math.PI / 3 * 5);
+                        ctx.lineTo(960, 540);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.arc(960, 540, 100 * exp, 0, Math.PI / -3, true);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.arc(960 + Math.cos(Math.PI / -3) * 250 * exp, 540 + Math.sin(Math.PI / -3) * 250 * exp, 10, 0, Math.PI * 2);
+                        ctx.fill();
+                    }, function () {
+                        ctx.strokeStyle = hsla(0, 0, 70, 1);
+                        ctx.arc(960, 540, 250, Math.PI / -3, Math.PI / 3 * 5);
+                        ctx.lineTo(960, 540);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.arc(960, 540, 100, 0, Math.PI / -3, true);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.arc(960 + Math.cos(Math.PI / -3) * 250, 540 + Math.sin(Math.PI / -3) * 250, 10, 0, Math.PI * 2);
+                        ctx.fill();
+                    }, function () {
+                        var angle = sinusoidalEase(570, 720) * Math.PI * 4 + Math.PI / 3 * 5;
+                        ctx.strokeStyle = hsla(0, 0, 70, 1);
+                        ctx.arc(960, 540, 250, angle, angle + Math.PI * 2);
+                        ctx.lineTo(960, 540);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.arc(960, 540, 100, 0, angle, true);
+                        ctx.stroke();
+
+                        ctx.strokeStyle = hsla(0, 0, 20, 1);
+                        ctx.beginPath();
+                        ctx.arc(960 + Math.cos(angle) * 250, 540 + Math.sin(angle) * 250, 10, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        ctx.font = "Bold 24px Courier";
+                        eventChain([570, 620, 720], [function () {
+                            ctx.fillStyle = hsla(0, 0, 40, exponentialEaseIn(570, 620, 0.01));
+                            ctx.fillText(Math.abs(Math.round(180 / Math.PI * -(Math.PI * 2 - (angle % (Math.PI * 2))))) + "°", 1070, 490);
+                        }, function () {
+                            ctx.fillStyle = hsla(0, 0, 40, 1);
+                            ctx.fillText(Math.abs(Math.round(180 / Math.PI * -(Math.PI * 2 - (angle % (Math.PI * 2))))) + "°", 1070, 490);
+                        }]);
+                    }, function () {
+                        drawPointOnCenter(Math.PI / 3 * 5, 250, 1);
+                    }, function () {
+                        drawPointOnCenter(Math.PI / 3 * 5, 250, 1)
+                        var exp = exponentialEaseIn(740, 820, 0.01);
+                        drawPointOnCenter(Math.PI * 2 - Math.PI / 3 * 2 * exp, 500 * exp, exp);
+                    }, function () {
+                        var angle = Math.PI / 3 * 5;
+                        drawPointOnCenter(angle, 250, 1);
+                        drawPointOnCenter(angle * 2, 500, 1);
+                    }, function () {
+                        var angle = Math.PI * 2 - (1 - sinusoidalEase(900, 950)) * Math.PI / 12 * 3 - Math.PI / 12;
+                        drawPointOnCenter(angle, 250, 1);
+                        drawPointOnCenter(angle * 2, 500, 1);
+                    }, function () {
+                        drawPointOnCenter(Math.PI / 12 * 23, 250, 1);
+                        drawPointOnCenter(Math.PI / 12 * 22, 500, 1);
+                        var exp = exponentialEaseIn(950, 1030, 0.01);
+                        drawPointOnCenter(Math.PI * 2 - Math.PI / 12 * 3 * exp, 750 * exp, exp);
+                    }, function () {
+                        drawPointOnCenter(Math.PI / 12 * 23, 250, 1);
+                        drawPointOnCenter(Math.PI / 12 * 22, 500, 1);
+                        drawPointOnCenter(Math.PI / 12 * 21, 750, 1);
+                    }, function () {
+                        var sin = sinusoidalEase(1050, 1150);
+                        var scaleFactor = (1 - sin) * 0.8 + 0.2;
+                        drawPointOnCenter(Math.PI / 12 * 23, 250 * scaleFactor, 1, 1 - sin);
+                        drawPointOnCenter(Math.PI / 12 * 22, 500 * scaleFactor, 1, 1 - sin);
+                        drawPointOnCenter(Math.PI / 12 * 21, 750 * scaleFactor, 1, 1 - sin);
+                    }, function () {
+                        drawPointOnCenter(Math.PI / 12 * 23, 50, 1, 0);
+                        drawPointOnCenter(Math.PI / 12 * 22, 100, 1, 0);
+                        drawPointOnCenter(Math.PI / 12 * 21, 150, 1, 0);
+                        for (var i = 4; 11 > i; i++) {
+                            if (between(t, 1149, 1250 + 10 * i)) {
+                                var exp = exponentialEaseIn(1150 + 10 * i, 1250 + 10 * i, 0.01);
+                                drawPointOnCenter(Math.PI * 2 - Math.PI / 12 * i * exp, 50 * i * exp, exp, 0);
+                            } else {
+                                drawPointOnCenter(Math.PI * 2 - Math.PI / 12 * i, 50 * i, 1, 0);
+                            }
+                        }
+                    }, function () {
+                        var angle = (1 - sinusoidalEase(1350, 1400)) * Math.PI / 12;
+                        for (var i = 1; 11 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 50 * i, 1, 0);
+                        }
+                    }, function () {
+                        var angle = sinusoidalEase(1400, 2400) * Math.PI * 2;
+                        for (var i = 1; 11 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 50 * i, 1, 0);
+                        }
+                    }, function () {
+                        var angle = 0;
+                        for (var i = 1; 11 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 50 * i, 1, 0);
+                        }
+                    }, function () {
+                        var angle = sinusoidalEase(2450, 2550) * Math.PI / 3 * 2;
+                        for (var i = 1; 11 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 50 * i, 1, 0);
+                        }
+                    }, function () {
+                        var angle = Math.PI / 3 * 2;
+                        for (var i = 1; 11 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 50 * i, 1, 0);
+                        }
+                    }, function () {
+                        var angle = Math.PI / 3 * 2 - sinusoidalEase(3100, 3200) * Math.PI / 6;
+                        for (var i = 1; 11 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 50 * i, 1, 0);
+                        }
+                    }, function () {
+                        var angle = Math.PI / 2;
+                        for (var i = 1; 11 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 50 * i, 1, 0);
+                        }
+                    }, function () {
+                        var angle = Math.PI / 2 - sinusoidalEase(3300, 3400) * Math.PI / 10;
+                        for (var i = 1; 11 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 50 * i, 1, 0);
+                        }
+                    }, function () {
+                        var angle = Math.PI / 2.5;
+                        for (var i = 1; 11 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 50 * i, 1, 0);
+                        }
+                    }, function () {
+                        var angle = Math.PI / 2.5 + sinusoidalEase(3500, 3600) * (Math.PI - Math.PI / 2.5);
+                        for (var i = 1; 11 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 50 * i, 1, 0);
+                        }
+                    }, function () {
+                        var angle = Math.PI;
+                        for (var i = 1; 11 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 50 * i, 1, 0);
+                        }
+                    }, function () {
+                        var angle = Math.PI - sinusoidalEase(3700, 3800) * (Math.PI * 11 / 12);
+                        var sin = 1 - sinusoidalEase(3700, 3800);
+                        for (var i = 1; 11 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 50 * i, 1, 0, sin);
+                        }
+                    }, function () {
+                        var angle = Math.PI / 12;
+                        var sin = sinusoidalEase(3800, 3900);
+                        var scaleFactor = (1 - sin) * 0.8 + 0.2;
+                        for (var i = 1; 11 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 50 * i * scaleFactor, 1, 0, 0);
+                        }
+                        for (var i = 11; 61 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 50 * i * scaleFactor, sin, 0, 0);
+                        }
+                    }, function () {
+                        var angle = Math.PI / 12;
+                        for (var i = 1; 61 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 10 * i, 1, 0, 0);
+                        }
+                    }, function () {
+                        var angle = Math.PI / 12 - sinusoidalEase(4000, 4100) * Math.PI / 12;
+                        for (var i = 1; 61 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 10 * i, 1, 0, 0);
+                        }
+                    }, function () {
+                        var angle = sinusoidalEase(4100, 6350) * (Math.PI * 2 + Math.PI / 9.5);
+                        for (var i = 1; 61 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 10 * i, 1, 0, 0);
+                        }
+                    }, function () {
+                        var angle = Math.PI / 9.5;
+                        for (var i = 1; 61 > i; i++) {
+                            drawPointOnCenter(Math.PI * 2 - angle * i, 10 * i, 1, 0, 0);
+                        }
+                    }, function () {
+                        var eventTimes = [6400];
+                        var eventFunctions = [];
+                        for (var i2 = 0; 18 > i2; i2++) {
+                            eventTimes.push(6500 + 100 * i2);
+                            eventFunctions.push(function () {
+                                var index = Math.floor((t - 6400) / 100);
+                                var angle = sinEaseTwoValues(6400 + 100 * index, 6500 + 100 * index, 2 * Math.PI / (19 - index), 2 * Math.PI / (18 - index));
+                                for (var i = 1; 61 > i; i++) {
+                                    drawPointOnCenter(Math.PI * 2 - angle * i, 10 * i, 1, 0, 0);
+                                }
+                            });
+                        }
+                        eventChain(eventTimes, eventFunctions);
+                    }]);
+                });
+
+
+
+                //background lines and grid and all that for graph
+                ctx.lineWidth = 4;
+
+                fadeInOut(235, 255, 3700, 3750, function (a) {
+                    ctx.strokeStyle = hsla(0, 0, 20, a);
+                    ctx.beginPath();
+                    ctx.moveTo(0, 540);
+                    ctx.lineTo(1920, 540)
+                    ctx.stroke();
+                });
+
+                fadeInOut(240, 260, 3700, 3750, function (a) {
+                    ctx.strokeStyle = hsla(0, 0, 20, a);
+                    ctx.beginPath();
+                    ctx.moveTo(960, 0);
+                    ctx.lineTo(960, 1080);
+                    ctx.stroke();
+                });
+
+                ctx.font = "Bold 32px Courier";
+
+                eventChain([0, 1050, 1150, 3700, 3750], [function () {
+                    for (var i = 0; 7 > i; i++) {
+                        fadeInOut(245 + 5 * i, 265 + 5 * i, 3000, 3050, function (a) {
+                            ctx.strokeStyle = hsla(0, 0, 20, a);
+                            ctx.fillStyle = hsla(0, 0, 20, a);
+                            ctx.beginPath();
+                            ctx.moveTo(210 + 250 * i, 520);
+                            ctx.lineTo(210 + 250 * i, 560);
+                            ctx.stroke();
+                            if (i != 3) {
+                                ctx.fillText(i - 3, 210 + 250 * i, 600);
+                            }
+                        });
+                    }
+                    for (var i = 0; 5 > i; i++) {
+                        fadeInOut(250 + 5 * i, 270 + 5 * i, 3000, 3050, function (a) {
+                            ctx.strokeStyle = hsla(0, 0, 20, a);
+                            ctx.fillStyle = hsla(0, 0, 20, a);
+                            ctx.beginPath();
+                            ctx.moveTo(940, 1080 - (40 + 250 * i));
+                            ctx.lineTo(980, 1080 - (40 + 250 * i));
+                            ctx.stroke();
+                            if (i != 2) {
+                                ctx.fillText(i - 2, 920, 1090 - (40 + 250 * i));
+                            }
+                        });
+                    }
+                }, function () {
+                    var sin = sinusoidalEase(1050, 1150);
+                    var scaleFactor = (1 - sin) * 0.8 + 0.2;
+                    for (var i = 0; 41 > i; i++) {
+                        ctx.strokeStyle = hsla(0, 0, 20, 1);
+                        ctx.fillStyle = hsla(0, 0, 20, 1);
+                        ctx.beginPath();
+                        ctx.moveTo(centerScaleX(-4040 + 250 * i, scaleFactor), 520);
+                        ctx.lineTo(centerScaleX(-4040 + 250 * i, scaleFactor), 560);
+                        ctx.stroke();
+                        if (i != 20) {
+                            ctx.fillText(i - 20, centerScaleX(-4040 + 250 * i, scaleFactor), 600);
+                        }
+                    }
+                    for (var i = 0; 31 > i; i++) {
+                        ctx.strokeStyle = hsla(0, 0, 20, 1);
+                        ctx.fillStyle = hsla(0, 0, 20, 1);
+                        ctx.beginPath();
+                        ctx.moveTo(940, centerScaleY(4290 - (250 * i), scaleFactor));
+                        ctx.lineTo(980, centerScaleY(4290 - (250 * i), scaleFactor));
+                        ctx.stroke();
+                        if (i != 15) {
+                            ctx.fillText(i - 15, 920, centerScaleY(4300 - (250 * i), scaleFactor));
+                        }
+                    }
+                }, function () {
+                    var scaleFactor = 0.2;
+                    for (var i = 0; 41 > i; i++) {
+                        ctx.strokeStyle = hsla(0, 0, 20, 1);
+                        ctx.fillStyle = hsla(0, 0, 20, 1);
+                        ctx.beginPath();
+                        ctx.moveTo(centerScaleX(-4040 + 250 * i, scaleFactor), 520);
+                        ctx.lineTo(centerScaleX(-4040 + 250 * i, scaleFactor), 560);
+                        ctx.stroke();
+                        if (i != 20) {
+                            ctx.fillText(i - 20, centerScaleX(-4040 + 250 * i, scaleFactor), 600);
+                        }
+                    }
+                    for (var i = 0; 31 > i; i++) {
+                        ctx.strokeStyle = hsla(0, 0, 20, 1);
+                        ctx.fillStyle = hsla(0, 0, 20, 1);
+                        ctx.beginPath();
+                        ctx.moveTo(940, centerScaleY(4290 - (250 * i), scaleFactor));
+                        ctx.lineTo(980, centerScaleY(4290 - (250 * i), scaleFactor));
+                        ctx.stroke();
+                        if (i != 15) {
+                            ctx.fillText(i - 15, 920, centerScaleY(4300 - (250 * i), scaleFactor));
+                        }
+                    }
+                }, function () {
+                    var sin = 1 - sinusoidalEase(3700, 3750);
+                    var scaleFactor = 0.2;
+                    for (var i = 0; 41 > i; i++) {
+                        ctx.strokeStyle = hsla(0, 0, 20, sin);
+                        ctx.fillStyle = hsla(0, 0, 20, sin);
+                        ctx.beginPath();
+                        ctx.moveTo(centerScaleX(-4040 + 250 * i, scaleFactor), 520);
+                        ctx.lineTo(centerScaleX(-4040 + 250 * i, scaleFactor), 560);
+                        ctx.stroke();
+                        if (i != 20) {
+                            ctx.fillText(i - 20, centerScaleX(-4040 + 250 * i, scaleFactor), 600);
+                        }
+                    }
+                    for (var i = 0; 31 > i; i++) {
+                        ctx.strokeStyle = hsla(0, 0, 20, sin);
+                        ctx.fillStyle = hsla(0, 0, 20, sin);
+                        ctx.beginPath();
+                        ctx.moveTo(940, centerScaleY(4290 - (250 * sin), scaleFactor));
+                        ctx.lineTo(980, centerScaleY(4290 - (250 * sin), scaleFactor));
+                        ctx.stroke();
+                        if (i != 15) {
+                            ctx.fillText(i - 15, 920, centerScaleY(4300 - (250 * i), scaleFactor));
+                        }
+                    }
+                }
+                ]);
+
+                fadeInOut(260, 280, 3000, 3050, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("0", 920, 600);
+                });
+
+
+
+
+                ctx.font = "Bold 48px Courier";
+                ctx.textAlign = "left";
+
+                fadeInOut(300, 320, 380, 400, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("Take a point...", 1250, 450);
+                });
+
+                fadeInOut(400, 420, 500, 520, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("Put it somewhere", 1250, 410);
+                    ctx.fillText("on the unit circle.", 1250, 450);
+                });
+
+                fadeInOut(600, 620, 700, 720, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("Anywhere on", 1250, 410);
+                    ctx.fillText("the unit circle.", 1250, 450);
+                });
+
+                fadeInOut(720, 740, 880, 900, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("Let's add another one.", 1250, 370);
+                    ctx.fillText("This has double", 1250, 410);
+                    ctx.fillText("the angle and magnitude.", 1250, 450);
+                });
+
+                fadeInOut(940, 960, 1020, 1040, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("This has triple", 1250, 410);
+                    ctx.fillText("the angle and magnitude.", 1250, 450);
+                });
+
+                fadeInOut(1100, 1120, 1220, 1240, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("How about some more,", 1250, 370);
+                    ctx.fillText("following the", 1250, 410);
+                    ctx.fillText("same pattern?", 1250, 450);
+                });
+
+                fadeInOut(1400, 1420, 1620, 1640, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("Now let's slowly", 1250, 370);
+                    ctx.fillText("increase the angle", 1250, 410);
+                    ctx.fillText("from 0-360 degrees.", 1250, 450);
+                });
+
+                fadeInOut(2440, 2460, 2580, 2600, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("You may have noticed", 1250, 370);
+                    ctx.fillText("the points lining up", 1250, 410);
+                    ctx.fillText("as the angle increased.", 1250, 450);
+                });
+
+                fadeInOut(2600, 2620, 2740, 2760, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("In this case, the", 1100, 370);
+                    ctx.fillText("angle increases by", 1100, 410);
+                    ctx.fillText("120 degrees each time.", 1100, 450);
+                });
+
+                fadeInOut(2740, 2760, 2900, 2920, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("This means that by", 1100, 370);
+                    ctx.fillText("the third angle,", 1100, 410);
+                    ctx.fillText("it's back to 0 degrees.", 1100, 450);
+                });
+
+                fadeInOut(2920, 2940, 3100, 3120, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("This allows the cycle", 1100, 370);
+                    ctx.fillText("to repeat all over again,", 1100, 410);
+                    ctx.fillText("making everything line up.", 1100, 450);
+                });
+
+                fadeInOut(3120, 3140, 3260, 3280, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("The angle is now", 1100, 370);
+                    ctx.fillText("90 degrees.", 1100, 410);
+                    ctx.fillText("Every fourth lines up.", 1100, 450);
+                });
+
+                fadeInOut(3260, 3280, 3380, 3400, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("At 72 degrees", 1100, 370);
+                    ctx.fillText("(1/5th of 360),", 1100, 410);
+                    ctx.fillText("every fifth lines up.", 1100, 450);
+                });
+
+                fadeInOut(3460, 3480, 3580, 3600, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("At 180 degrees,", 1100, 370);
+                    ctx.fillText("every other point", 1100, 410);
+                    ctx.fillText("lines up.", 1100, 450);
+                });
+
+                fadeInOut(3660, 3680, 3880, 3900, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("Let's zoom out,", 1100, 370);
+                    ctx.fillText("More points will show", 1100, 410);
+                    ctx.fillText("this more easily.", 1100, 450);
+                });
+
+                fadeInOut(3960, 3980, 4120, 4140, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("Now I'm going to", 1100, 370);
+                    ctx.fillText("increase the angle to", 1100, 410);
+                    ctx.fillText("360 degrees.", 1100, 450);
+                });
+
+                fadeInOut(5860, 5880, 6040, 6060, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("Did you see the pattern?", 1100, 370);
+                    ctx.fillText("The point line-up", 1100, 410);
+                    ctx.fillText("is far more visible.", 1100, 450);
+                });
+                
+                fadeInOut(6060, 6080, 6240, 6260, function (a) {
+                    ctx.fillStyle = hsla(0, 0, 20, a);
+                    ctx.fillText("Let's step through", 1100, 370);
+                    ctx.fillText("several of the angles", 1100, 410);
+                    ctx.fillText("where points line up.", 1100, 450);
+                });
+
+                t++;
+
+                requestAnimationFrame(loop);
+            }
+            loop();
+        </script>
+    </body>
+</html>

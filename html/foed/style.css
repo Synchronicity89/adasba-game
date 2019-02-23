@@ -1,0 +1,90 @@
+body {
+    padding: 0px;
+    margin: 0px;
+    font-family: 'Open Sans', sans-serif;
+    color: #FFFFFF;
+    overflow-x: hidden;
+    background-image: url(https://huntingtonsdiseasenews.com/wp-content/uploads/2017/04/shutterstock_598700483.jpg);
+}
+
+.header {
+    clear: both;
+    width: 100%;
+    margin: 0px;
+    padding: 16px;
+    text-align: center;
+    background: #000000FF;
+}
+
+h1 {
+    font-size: 48px;
+}
+
+h2 {
+    font-size: 36px;
+}
+
+h3 {
+    font-size: 24px;
+}
+
+
+
+.image-icon {
+    float: left;
+}
+
+.image-icon img {
+    width: 100%;
+    height: 100%;
+    position: inherit;
+    top: 0px;
+    left: 0px;
+    transition: filter 1s;
+    margin-bottom: -70%;
+}
+
+.text {
+    position: relative;
+    top: 50px;
+    left: 5%;
+    width: 90%;
+    height: 100%;
+    color: #FFFFFF00;
+    transition: top 1s, color 1s;
+}
+
+p {
+    word-wrap: break-word;
+}
+
+.image-icon:hover img {
+    filter: brightness(0.3);
+}
+
+.image-icon:hover .text {
+    top: -100px;
+    color: #FFFFFF;
+}
+
+.cookie-icon {
+    position: fixed;
+    background: #000000BB;
+    width: 100%;
+    padding: 20px;
+    z-index: 99999;
+}
+
+.newsletter-icon {
+    position: fixed;
+    top: 35%;
+    left: 35%;
+    background: #000000BB;
+    width: 30%;
+    padding: 20px;
+    z-index: 99999;
+}
+
+.red {
+    color: #FF0000;
+}

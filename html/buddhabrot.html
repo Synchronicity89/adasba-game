@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+   
+  </head>
+  <body>
+    <canvas width="1024" height="1024" id="canvas"></canvas>
+    <script>
+        var c = document.getElementById("canvas");
+var ctx = c.getContext("2d");
+
+var buffer = new ArrayBuffer(c.width * c.height * 4);
+
+var arr8 = new Uint8ClampedArray(buffer);
+
+var arr = new Uint32Array(buffer);
+
+function rgba(r, g, b, a) {
+	return r | (g << 8) | (b << 16) | (a << 24);
+}
+
+function mandelbrotRect(x, y, w, h, iterations, resx, resy) {
+      	var mData = [];
+      	for (var i = 0; resy > i; i++) {
+        	mData.push([]);
+        	for (var i2 = 0; resx > i2; i2++) {
+          	mData[i].push({
+            	iterations: 0,
+              path: [{ x: 0, y: 0 }],
+              in: true,
+              pos: { x: x + i2 * (w / resx), y: y + i * (h / resy) }
+            });
+            for (var i3 = 0; iterations > i3; i3++) {
+            	mData[i][i2].path.push({ 
+              	x: Math.pow(mData[i][i2].path[i3].x, 2) - Math.pow(mData[i][i2].path[i3].y, 2) + mData[i][i2].pos.x,
+                y: 2 * mData[i][i2].path[i3].x * mData[i][i2].path[i3].y + mData[i][i2].pos.y
+              });
+              if (Math.sqrt(Math.pow(mData[i][i2].path[i3 + 1].x, 2) + Math.pow(mData[i][i2].path[i3 + 1].y, 2)) > 2) {
+              	mData[i][i2].in = false;
+              } else if (mData[i][i2].in) {
+              	mData[i][i2].iterations++;
+              }
+            }
+          }
+        }
+        return mData;
+      }
+
+
+      function mandelbrotPoint(x, y, iterations) {
+      	var mData = {
+            	iterations: 0,
+              path: [{ x: 0, y: 0 }],
+              in: true,
+              pos: { x: x, y: y }
+            };
+            for (var i3 = 0; iterations > i3 && mData.in; i3++) {
+            	mData.path.push({ 
+              	x: Math.pow(mData.path[i3].x, 2) - Math.pow(mData.path[i3].y, 2) + mData.pos.x,
+                y: 2 * mData.path[i3].x * mData.path[i3].y + mData.pos.y
+              });
+              if (Math.sqrt(Math.pow(mData.path[i3 + 1].x, 2) + Math.pow(mData.path[i3 + 1].y, 2)) > 2) {
+              	mData.in = false;
+              } else if (mData.in) {
+              	mData.iterations++;
+              }
+            }
+        return mData;
+
+    }
+
+    for (var i = 0; arr.length > i; i++) {
+        arr[i] += (255 << 24);  
+    }
+var multi = 1;
+function loop() {
+    //var j = mandelbrotRect(-1.5 + multi * offset, -1.5 + multi * offset, 3, 3, 64, 100, 100);
+    var j = [];
+    for (var i = 0; 8192 > i; i++) {
+        j.push(mandelbrotPoint(-2 + Math.random() * 4, -2 + Math.random() * 4, 32));
+    }
+
+    for (var i = 0; j.length > i; i++) {
+        j[i].path.forEach(function (e) {
+            var num = Math.round((e.y / 3 + 0.5) * c.height) * c.width + Math.round((e.x / 3 + 0.5) * c.width);
+            if (!j[i].in && num > -1 && num < arr.length) {
+            //if (arr[num] < 255) {
+                    arr[num] += 1 * multi;
+            //}
+         }
+        });
+    }
+
+    var j = [];
+    for (var i = 0; 4096 > i; i++) {
+        j.push(mandelbrotPoint(-2 + Math.random() * 4, -2 + Math.random() * 4, 512));
+    }
+
+    for (var i = 0; j.length > i; i++) {
+        j[i].path.forEach(function (e) {
+            var num = Math.round((e.y / 3 + 0.5) * c.height) * c.width + Math.round((e.x / 3 + 0.5) * c.width);
+            if (!j[i].in && num > -1 && num < arr.length) {
+            //if (arr[num] < 255) {
+                    arr[num] += 256 * multi;
+            //}
+         }
+        });
+    }
+
+
+    var j = [];
+    for (var i = 0; 1024 > i; i++) {
+        j.push(mandelbrotPoint(-2 + Math.random() * 4, -2 + Math.random() * 4, 4096));
+    }
+
+    for (var i = 0; j.length > i; i++) {
+        j[i].path.forEach(function (e) {
+            var num = Math.round((e.y / 3 + 0.5) * c.height) * c.width + Math.round((e.x / 3 + 0.5) * c.width);
+            if (!j[i].in && num > -1 && num < arr.length) {
+            //if (arr[num] < 255) {
+                    arr[num] += 65536 * multi;
+            //}
+         }
+        });
+    }
+
+
+    var img = new ImageData(arr8, c.width, c.height);
+    ctx.putImageData(img, 0, 0);
+        setTimeout(loop, 0);
+}
+loop();
+
+
+    </script>
+  </body>
+</html>

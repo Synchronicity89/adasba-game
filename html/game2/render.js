@@ -45,10 +45,10 @@ function render() {
     ctx.translate(p.x, p.y);
     ctx.rotate(Math.atan2(p.dy, p.dx));
     ctx.beginPath();
-    ctx.moveTo(-15, -15);
-    ctx.lineTo(15, 0);
-    ctx.lineTo(-15, 15);
-    ctx.lineTo(-7, 0);
+    ctx.moveTo(-22, -22);
+    ctx.lineTo(22, 0);
+    ctx.lineTo(-22, 22);
+    ctx.lineTo(-10, 0);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();

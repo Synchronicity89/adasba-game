@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style type="text/css">
+            canvas {
+                margin: 0px;
+                width: 100%;
+                height: 100%;
+            }
+            body {
+                overflow: hidden;
+                margin: 0px;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas" width="1920" height="1080"></canvas>
+        <script>
+
+            //define canvas and canvas context
+            var c = document.getElementById("canvas");
+            var ctx = c.getContext("2d");
+
+            //keyboard presses
+            var keys = [];
+            document.addEventListener("keydown", function (e) {
+                keys[e.keyCode] = true;
+            }, false);
+            document.addEventListener("keyup", function (e) {
+                keys[e.keyCode] = false;
+            }, false);
+
+            //tests if inside of a rectangle
+            function inside_rect(x, y, w, h, px, py) {
+                if (px > x && py > y && px < x + w && py < y + h) {
+                    return true;
+                }
+                return false;
+            }
+
+            //all game levels
+            var levels = [
+                {
+                    name: "Tutorial",
+                    size: { x: 10, y: 10 },
+                    velocity: 20,
+                    tiles: [],
+                    frame_function: function () {
+
+                    },
+                    goals: [{ x: 7, y: 7 }, { x: 3, y: 4}, { x: 8, y: 6 }],
+                    start: { x: 5, y: 5 }
+                },
+                {
+                    name: "More Collectibles",
+                    size: { x: 25, y: 25 },
+                    velocity: 12,
+                    tiles: [],
+                    frame_function: function () {
+
+                    },
+                    goals: [{ x: 3, y: 15 }, { x: 7, y: 24 }, { x: 13, y: 9 }, { x: 7, y: 7 }, { x: 21, y: 19 }, { x: 13, y: 12 }],
+                    start: { x: 5, y: 5 }
+                }
+            ];
+            
+            //player info
+            var p = {
+                x: 0,
+                y: 0,
+                angle: 0,
+                angle_2: 0,
+                velocity: 15,
+                length: 3,
+                tail: []
+            };
+            
+            //tiles in game
+            var tiles = [];
+            
+            //objects in game
+            var objects = [];
+
+            //snake goal
+            function Goal(x, y) {
+                this.x = x;
+                this.y = y;
+                this.obj_type = "goal";
+                this.remove = false;
+                this.draw = function () {
+                    ctx.fillStyle = "#333333";
+                    ctx.beginPath();
+                    ctx.arc(this.x * 32 + 16, this.y * 32 + 16, 14, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                this.frame_function = function () {
+                    if (p.x == this.x && p.y == this.y) {
+                        this.remove = true;
+                        goal_counter++;
+                        if (goal_counter < levels[current_level].goals.length) {
+                            objects.push(new Goal(levels[current_level].goals[goal_counter].x, levels[current_level].goals[goal_counter].y));
+                            p.length++;
+                        } else {
+                            current_level++;
+                            init_level(levels[current_level]);
+                        }
+                    }
+                }
+            }
+
+            //initiate level
+            function init_level(level) {
+                p.x = level.start.x;
+                p.y = level.start.y;
+                p.velocity = level.velocity;
+                p.tail = [];
+                p.angle = 0;
+                p.angle_2 = 0;
+                p.length = 3;
+                objects = [];
+                objects.push(new Goal(level.goals[0].x, level.goals[0].y));
+                goal_counter = 0;
+            }
+
+            //stores the current level
+            var current_level = 0;
+
+            //counts goals
+            var goal_counter = 0;
+            
+            //timer
+            var t = 0;
+            
+            init_level(levels[0]);
+
+            //loop function, triggered every sixtyith of a second
+            function loop() {
+
+                //key movement
+                if (keys[87] && p.angle_2 != 1) {
+                    p.angle = 3;
+                }
+                if (keys[83] && p.angle_2 != 3) {
+                    p.angle = 1;
+                }
+                if (keys[68] && p.angle_2 != 2) {
+                    p.angle = 0;
+                }
+                if (keys[65] && p.angle_2 != 0) {
+                    p.angle = 2;
+                }
+                
+                //move snake
+                if (t % p.velocity == 0) {
+                    p.x += Math.cos(p.angle / 2 * Math.PI);
+                    p.y += Math.sin(p.angle / 2 * Math.PI);
+                    p.angle_2 = p.angle;
+                    p.tail.push({ x: p.x, y: p.y });
+                    if (p.tail.length > p.length) {
+                        p.tail.splice(0, 1);
+                    }
+                }
+
+                //reset if out of bounds
+                if (!inside_rect(0, 0, levels[current_level].size.x, levels[current_level].size.y, p.x, p.y)) {
+                    init_level(levels[current_level]);
+                }
+                
+                //set transform to player position
+                ctx.setTransform(1, 0, 0, 1, -32 * p.x + 960, -32 * p.y + 540);
+
+                //functions for objects in game
+                objects.forEach(function(e) {
+                    e.frame_function();
+                });
+
+                objects.forEach(function(e, i) {
+                    if (e.remove) {
+                        objects.splice(i, 1);
+                    }
+                })
+
+                //clear canvas
+                ctx.fillStyle = "#EEEEEE";
+                ctx.fillRect(0, 0, c.width, c.height);
+
+                //draw objects in game
+                objects.forEach(function(e) {
+                    e.draw();
+                });
+                
+                //draw player tail
+                for (var i = 0; p.tail.length > i; i++) {
+                    ctx.fillRect(p.tail[i].x * 32, p.tail[i].y * 32, 32, 32);
+                }
+
+                //draw map walls
+                ctx.fillRect(-960, -540, 960, 1080 + 32 * levels[current_level].size.y);
+                ctx.fillRect(0, -540, 1920 + 32 * levels[current_level].size.x, 540);
+                ctx.fillRect(0, 32 * levels[current_level].size.y, 960, 540);
+                ctx.fillRect(32 * levels[current_level].size.x, -540, 960, 1080 + 32 * levels[current_level].size.y);
+                
+                //increment loop timer
+                t++;
+
+                //repeat loop
+                requestAnimationFrame(loop);
+            }
+
+            //initiate looping
+            loop();
+        </script>
+    </body>
+</html>

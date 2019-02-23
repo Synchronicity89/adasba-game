@@ -1,0 +1,519 @@
+﻿<!DOCTYPE html>
+<html>
+ <head>
+   <meta charset="UTF-8">
+   <style type="text/css">
+       canvas {
+           position: absolute;
+           top: 0px;
+           left: 0px;
+           width: 100%;
+           height: 100%;
+       }
+   </style>
+ </head>
+ <body>
+   <canvas id="canvas" width="1920" height="1080"></canvas>
+   <script>
+       var c = document.getElementById("canvas");
+       var ctx = c.getContext("2d");
+
+
+
+       function Vector3(x, y, z) {
+           this.x = x;
+           this.y = y;
+           this.z = z;
+           this.add = function (v3) {
+               return new Vector3(this.x + v3.x, this.y + v3.y, this.z + v3.z);
+           }
+           this.subtract = function (v3) {
+               return new Vector3(this.x - v3.x, this.y - v3.y, this.z - v3.z);
+           }
+           this.multiply = function (num) {
+               return new Vector3(this.x * num, this.y * num, this.z * num);
+           }
+           this.length = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+       }
+
+
+
+       var v = {
+           p: new Vector3(2, -2, 3),
+           d: new Vector3(0, 0, 0),
+           rx: 2,
+           ry: 0
+       }
+
+
+
+       function inCuboid(cuboid, point) {
+           if (
+               cuboid.p1.x <= point.x &&
+               cuboid.p1.x + cuboid.p2.x >= point.x &&
+               cuboid.p1.y <= point.y &&
+               cuboid.p1.y + cuboid.p2.y >= point.y &&
+               cuboid.p1.z <= point.z &&
+               cuboid.p1.z + cuboid.p2.z >= point.z
+           ) {
+               return true;
+           }
+           return false;
+       }
+
+
+       function clamp(value, min, max) {
+           if (value < min) {
+               return min;
+           } else if (value > max) {
+               return max;
+           }
+           return value;
+       }
+
+
+
+       function inRect(x, y, w, h, x2, y2) {
+           if (x2 > x && x2 < x + w && y2 > y && y2 < y + h) {
+               return true;
+           }
+           return false;
+       }
+
+
+
+       var obst = [
+         {
+           p1: new Vector3(-10, -10, 5),
+           p2: new Vector3(20, 20, 10)
+         }
+         ];
+
+         for (var i = 0; i < 6; i++) {
+            for (var i2 = 0; i2 < 6; i2++) {
+                //if (Math.random() > 0.5) {
+                    obst.push({
+                        p1: new Vector3(10 * i, 10 * i2, Math.random() * 10 + 2),
+                        p2: new Vector3(10, 10, 10)
+                    });
+                //}
+            }
+         }
+
+/*
+for (var i = 0; 10 > i; i++) {
+  obst.push({
+    p1: new Vector3(Math.random() * 15, Math.random() * 15, Math.random() * 15),
+    p2: new Vector3(Math.random() * 5, Math.random() * 5, Math.random() * 5)
+  });
+}
+*/
+
+       function Raycast(vector, origin, res, maxDist) {
+           this.d = vector;
+           this.p = origin;
+           this.op = origin;
+           this.dist = 0;
+           this.maxDist = maxDist;
+           // this.cast = function(testIntersect) {
+           //     for (var i = 0; maxDist > i; i++) {
+           //         this.p = this.p.add(this.d.multiply(res).multiply(i));
+           //         if (testIntersect(this.p)) {
+           //             return this.p.subtract(this.op).length;
+           //         }
+           //     }
+           //     return false;
+           // }
+           this.cast = function() {
+               var intersects = [];
+               for (var i = 0; obst.length > i; i++) {
+                //if (v.p.subtract(obst[i].p1.add(obst[i].p2.multiply(0.5))).length < 999) {
+                   if (Math.sign(obst[i].p1.x - this.p.x) == Math.sign(this.d.x)) {
+                       var diff = obst[i].p1.x - this.p.x;
+                       var vec4 = new Vector3(this.p.x + diff, this.p.y + (this.d.y / this.d.x) * diff, this.p.z + (this.d.z / this.d.x) * diff);
+                       if (inRect(obst[i].p1.y, obst[i].p1.z, obst[i].p2.y, obst[i].p2.z, vec4.y, vec4.z)) {
+                           intersects.push(vec4.subtract(this.p));
+                       }
+                   }
+
+
+                   if (Math.sign(obst[i].p1.y - this.p.y) == Math.sign(this.d.y)) {
+                       var diff = obst[i].p1.y - this.p.y;
+                       var vec4 = new Vector3(this.p.x + (this.d.x / this.d.y) * diff, this.p.y + diff, this.p.z + (this.d.z / this.d.y) * diff);
+                       if (inRect(obst[i].p1.x, obst[i].p1.z, obst[i].p2.x, obst[i].p2.z, vec4.x, vec4.z)) {
+                           intersects.push(vec4.subtract(this.p));
+                       }
+                   }
+
+
+
+                   if (Math.sign(obst[i].p1.z - this.p.z) == Math.sign(this.d.z)) {
+                       var diff = obst[i].p1.z - this.p.z;
+                       var vec4 = new Vector3(this.p.x + (this.d.x / this.d.z) * diff, this.p.y + (this.d.y / this.d.z) * diff, this.p.z + diff);
+                       if (inRect(obst[i].p1.x, obst[i].p1.y, obst[i].p2.x, obst[i].p2.y, vec4.x, vec4.y)) {
+                           intersects.push(vec4.subtract(this.p));
+                       }
+                   }
+
+                   if (Math.sign((obst[i].p1.x + obst[i].p2.x) - this.p.x) == Math.sign(this.d.x)) {
+                       var diff = (obst[i].p1.x + obst[i].p2.x) - this.p.x;
+                       var vec4 = new Vector3(this.p.x + diff, this.p.y + (this.d.y / this.d.x) * diff, this.p.z + (this.d.z / this.d.x) * diff);
+                       if (inRect(obst[i].p1.y, obst[i].p1.z, obst[i].p2.y, obst[i].p2.z, vec4.y, vec4.z)) {
+                           intersects.push(vec4.subtract(this.p));
+                       }
+                   }
+
+                   if (Math.sign((obst[i].p1.y + obst[i].p2.y) - this.p.y) == Math.sign(this.d.y)) {
+                       var diff = (obst[i].p1.y + obst[i].p2.y) - this.p.y;
+                       var vec4 = new Vector3(this.p.x + (this.d.x / this.d.y) * diff, this.p.y + diff, this.p.z + (this.d.z / this.d.y) * diff);
+                       if (inRect(obst[i].p1.x, obst[i].p1.z, obst[i].p2.x, obst[i].p2.z, vec4.x, vec4.z)) {
+                           intersects.push(vec4.subtract(this.p));
+                       }
+                   }
+
+
+                   if (Math.sign((obst[i].p1.z + obst[i].p2.z) - this.p.z) == Math.sign(this.d.z)) {
+                       var diff = (obst[i].p1.z + obst[i].p2.z) - this.p.z;
+                       var vec4 = new Vector3(this.p.x + (this.d.x / this.d.z) * diff, this.p.y + (this.d.y / this.d.z) * diff, this.p.z + diff);
+                       if (inRect(obst[i].p1.x, obst[i].p1.y, obst[i].p2.x, obst[i].p2.y, vec4.x, vec4.y)) {
+                           intersects.push(vec4.subtract(this.p));
+                       }
+                   }
+
+                //}
+               }
+               // if (Math.random() > 0.99999) {
+               //         console.log(intersects);
+               //     }
+               if (intersects.length == 0) {
+                   return false;
+               }
+               var lowestLength = 9999999;
+               for (var i = 0; intersects.length > i; i++) {
+                   if (intersects[i].length < lowestLength) {
+                       lowestLength = intersects[i].length;
+                   }
+               }
+               return lowestLength;
+           }
+       }
+
+
+
+       function dirToVec3(x, y) {
+           return new Vector3(Math.cos(x) * Math.cos(y), Math.sin(x) * Math.cos(y), Math.sin(y));
+       }
+
+       // function dirToVec3(x, y) {
+       //     var vec1 = new Vector3(Math.cos(x), Math.sin(x), 0);
+       //     return new Vector3(vec1.x, vec1.y, )
+       // }
+
+       function dirToVec3Offset(x, y, x2, y2) {
+           var vec1 = dirToVec3(x, y);
+           var vec2 = new Vector3(vec1.x + x2 * Math.cos(Math.atan2(vec1.y, vec1.x) + Math.PI / 2), vec1.y + x2 * Math.sin(Math.atan2(vec1.y, vec1.x) + Math.PI / 2), vec1.z);
+           var vec3 = vec2;
+           vec3.z += y2 * Math.cos(y);
+           vec3.x += y2 * -Math.sin(y) * Math.sin(x + Math.PI / 2);
+           vec3.y += y2 * Math.sin(y) * Math.cos(x + Math.PI / 2);
+           vec3 = vec3.multiply(1 / vec3.length);
+           return vec3;
+       }
+
+       function dirToVec3XOffset(x, y, x2) {
+           var vec1 = dirToVec3(x, y);
+           var xd = Math.atan2(vec1.y, vec1.x) + Math.PI / 2;
+           var vec2 = new Vector3(vec1.x + Math.cos(xd) * x2, vec1.y + Math.sin(xd) * x2, vec1.z);
+           xd = Math.atan2(vec2.y, vec2.x);
+           var vec3 = new Vector3(Math.cos(xd), Math.sin(xd), vec1.z);
+           return new Vector3(vec3.x / vec3.length, vec3.y / vec3.length, vec3.z / vec3.length);
+       }
+
+       var k = [];
+       document.addEventListener("keydown", function(e) {
+           k[e.keyCode] = true;
+       }, false);
+
+       document.addEventListener("keyup", function(e) {
+           k[e.keyCode] = false;
+       }, false);
+
+
+
+       var m = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+       document.addEventListener("mousemove", function(e) {
+           m = { x: e.clientX, y: e.clientY };
+       }, false);
+
+
+
+       var casts = [];
+
+       var res2 = 20;
+
+       var resolution = { x: Math.round(1920 / res2) , y: Math.round(1080 / res2) };
+
+       var fov = { x: 2 * (16 / 9), y: 2 };
+
+
+
+
+
+
+
+       //pointer lock
+       c.requestPointerLock = c.requestPointerLock ||
+           c.mozRequestPointerLock ||
+           c.webkitRequestPointerLock;
+       // Ask the browser to lock the pointer
+       c.requestPointerLock();
+       // Ask the browser to release the pointer
+       document.exitPointerLock = document.exitPointerLock ||
+           document.mozExitPointerLock ||
+           document.webkitExitPointerLock;
+       document.exitPointerLock();
+
+
+       c.onclick = function () {
+           c.requestPointerLock();
+       };
+       function changeCallback() {
+           if (document.pointerLockElement === requestedElement ||
+               document.mozPointerLockElement === requestedElement ||
+               document.webkitPointerLockElement === requestedElement) {
+               // Pointer was just locked
+               // Enable the mousemove listener
+               document.addEventListener("mousemove", this.moveCallback, false);
+           } else {
+               // Pointer was just unlocked
+               // Disable the mousemove listener
+               document.removeEventListener("mousemove", this.moveCallback, false);
+               this.unlockHook(this.element);
+           }
+       }
+       function moveCallback(e) {
+           var movementX = e.movementX ||
+               e.mozMovementX ||
+               e.webkitMovementX ||
+               0,
+               movementY = e.movementY ||
+                   e.mozMovementY ||
+                   e.webkitMovementY ||
+                   0;
+
+           v.rx += e.movementX / 100;
+           v.ry += e.movementY / 100;
+           v.ry = clamp(v.ry, -Math.PI / 2 + 0.001, Math.PI / 2 - 0.001);
+       }
+       // Hook pointer lock state change events
+       document.addEventListener('pointerlockchange', changeCallback, false);
+       document.addEventListener('mozpointerlockchange', changeCallback, false);
+       document.addEventListener('webkitpointerlockchange', changeCallback, false);
+       // Hook mouse move events
+       document.addEventListener("mousemove", this.moveCallback, false);
+
+
+       var casts = [];
+
+
+
+       var dres = 12;
+
+       function loop() {
+         ctx.globalAlpha = 1;
+         ctx.fillStyle = "Black";
+         ctx.fillRect(0, 0, c.width, c.height);
+         ctx.globalAlpha = 1;
+           //ctx.clearRect(0, 0, c.width, c.height);
+           casts = [];
+           var resolution = { x: Math.round(0.3 * 1920 / res2) , y: Math.round(0.3 * 1080 / res2) };
+           for (var i = 0; resolution.y > i; i++) {
+               casts.push([]);
+               for (var i2 = 0; resolution.x > i2; i2++) {
+                   var dir = dirToVec3(v.rx, v.ry);
+                   casts[i].push({
+                       ray: new Raycast(dirToVec3Offset(v.rx, v.ry, i2 * (fov.x / resolution.x) - fov.x / 2, i * (fov.y / resolution.y) - fov.y / 2), v.p.add(new Vector3(0, 0, -1.5)), 0.02, 30).cast(),
+                        div: [],
+                        x: i2 * (fov.x / resolution.x) - fov.x / 2,
+                        y: i * (fov.y / resolution.y) - fov.y / 2
+                   });
+               }
+           }
+           for (var i = 1; casts.length - 1> i; i++) {
+            for (var i2 = 1; casts[i].length - 1 > i2; i2++) {
+                //if (casts[i][i2].ray) {
+                    var maxres = 0;
+                    if (Math.ceil(casts[i][i2].ray / dres) > maxres) {
+                        maxres = Math.ceil(casts[i][i2].ray / dres);
+                    }
+                    if (Math.ceil(casts[i][i2 + 1].ray / dres) > maxres) {
+                        maxres = Math.ceil(casts[i][i2 + 1].ray / dres);
+                    }
+                    if (Math.ceil(casts[i + 1][i2].ray / dres) > maxres) {
+                        maxres = Math.ceil(casts[i + 1][i2].ray / dres);
+                    }
+                    if (Math.ceil(casts[i][i2 - 1].ray / dres) > maxres) {
+                        maxres = Math.ceil(casts[i][i2 - 1].ray / dres);
+                    }
+                    if (Math.ceil(casts[i - 1][i2].ray / dres) > maxres) {
+                        maxres = Math.ceil(casts[i - 1][i2].ray / dres);
+                    }
+                    for (var i3 = 0; maxres > i3; i3++) {
+                        casts[i][i2].div.push([]);
+                        for (var i4 = 0; maxres > i4; i4++) {
+                            casts[i][i2].div[i3].push(new Raycast(dirToVec3Offset(v.rx, v.ry, casts[i][i2].x + i4 * (fov.x / resolution.x) / maxres, casts[i][i2].y + i3 * (fov.y / resolution.y) / maxres), v.p.add(new Vector3(0, 0, -1.5)), 0.02, 30).cast());
+                        } 
+                    } 
+                //}
+            }   
+           }
+           var hueres = 10;
+           var hueFalloff = 300;
+
+            for (var i = 0; casts.length > i; i++) {
+                for (var i2 = 0; casts[i].length > i2; i2++) {
+                    for (var i3 = 0; casts[i][i2].div.length > i3; i3++) {
+                        for (var i4 = 0; casts[i][i2].div[i3].length > i4; i4++) {
+                            var ray = casts[i][i2].div[i3][i4];
+                            if (ray) {
+                                ctx.fillStyle = "hsl(0, 0%, " + Math.abs(100 - (ray * 10 % 200)) + "%)";
+                                ctx.fillRect(c.width / resolution.x * i2 + c.width / resolution.x / casts[i][i2].div.length * i4, c.height / resolution.y * i + c.height / resolution.y / casts[i][i2].div.length * i3, c.width / resolution.x / casts[i][i2].div.length, c.height / resolution.y / casts[i][i2].div.length);
+                            }
+                        }
+                    }
+                }
+            }
+        //    var prev = 0;
+        //    var rectL = 0;
+        //    for (var i = 0; casts.length - 1 > i; i++) {
+        //        rectL = 0;
+        //        prev = 0;
+        //        for (var i2 = 0; casts[i].length - 1 > i2; i2++) {
+        //            if (casts[i][i2] != false) {
+        //                prev = { r: Math.floor((255 - Math.abs(casts[i][i2] - casts[i + 1][i2]) * hueFalloff) / hueres) * hueres,
+        //                  g: Math.floor((255 - Math.abs(casts[i][i2] - casts[i][i2 + 1]) * hueFalloff) / hueres) * hueres,
+        //                  b: Math.floor((255 - Math.abs(casts[i][i2] - casts[i + 1][i2 + 1]) * hueFalloff) / hueres) * hueres };
+        //                for (var i3 = 0; i3 + i2 < casts[i].length - 1 &&
+        //                  prev.r == Math.floor((255 - Math.abs(casts[i][i2 + i3] - casts[i + 1][i2 + i3]) * hueFalloff) / hueres) * hueres &&
+        //                  prev.g == Math.floor((255 - Math.abs(casts[i][i2 + i3] - casts[i][i2 + 1 + i3]) * hueFalloff) / hueres) * hueres &&
+        //                  prev.b == Math.floor((255 - Math.abs(casts[i][i2 + i3] - casts[i + 1][i2 + 1 + i3]) * hueFalloff) / hueres) * hueres; i3++) {
+        //                    rectL++;
+        //                }
+        //               //ctx.fillStyle = "rgba(" + prev.r + ", " + prev.g + ", " + prev.b + ", " + (1 - casts[i][i2] / 25) + ")";
+        //               ctx.fillStyle = "rgba(" + prev.r + ", " + prev.g + ", " + prev.b + ", 1)";
+        //                ctx.fillRect(c.width / resolution.x * i2, c.height / resolution.y * i, c.width / resolution.x * rectL, c.height / resolution.y);
+        //                rectL = 0;
+        //                i2 += i3 - 1;
+        //            }
+        //        }
+        //    }
+           //obst[0].p1.y += 0.04;
+
+           if (k[87]) {
+               v.d.x += 0.06 * Math.cos(v.rx);
+               v.d.y += 0.06 * Math.sin(v.rx);
+           }
+
+           if (k[83]) {
+               v.d.x -= 0.06 * Math.cos(v.rx);
+               v.d.y -= 0.06 * Math.sin(v.rx);
+           }
+
+           if (k[65]) {
+               v.d.x -= 0.06 * Math.cos(v.rx + Math.PI / 2);
+               v.d.y -= 0.06 * Math.sin(v.rx + Math.PI / 2);
+           }
+
+           if (k[68]) {
+               v.d.x += 0.06 * Math.cos(v.rx + Math.PI / 2);
+               v.d.y += 0.06 * Math.sin(v.rx + Math.PI / 2);
+           }
+
+           if (k[32]) {
+               //v.d.z -= 0.07;
+           }
+
+           if (k[16]) {
+               v.d.z += 0.07;
+           }
+
+
+
+           // v.rx += (m.x / window.innerWidth - 0.5) * 0.25;
+           // v.ry += (m.y / window.innerHeight - 0.5) * 0.25;
+
+            v.d.z += 0.03;
+
+           for (var i = 0; obst.length > i; i++) {
+
+             /*if (inCuboid(obst[i], v.p)) {
+              v.p = v.p.subtract(v.d);
+               v.d = v.d.multiply(-0.5);
+
+               if (k[32]) {
+                   v.d.z -= 1;
+               }
+             }*/
+             if (v.p.x >= obst[i].p1.x && v.p.x <= obst[i].p1.x + obst[i].p2.x
+               && v.p.y >= obst[i].p1.y && v.p.y <= obst[i].p1.y + obst[i].p2.y
+               && v.p.z < obst[i].p1.z && v.p.z + v.d.z >= obst[i].p1.z) {
+                 v.d.z = -0.001;
+                 v.p.z += v.d.z;
+                 if (k[32]) {
+                   v.d.z -= 0.7;
+                 }
+             }
+             if (v.p.x >= obst[i].p1.x && v.p.x <= obst[i].p1.x + obst[i].p2.x
+               && v.p.z >= obst[i].p1.z && v.p.z <= obst[i].p1.z + obst[i].p2.z
+               && v.p.y < obst[i].p1.y && v.p.y + v.d.y >= obst[i].p1.y) {
+                 v.d.y = Math.abs(v.d.y) * -0.5;
+                 //v.p.y += v.d.y;
+                 v.p.y = obst[i].p1.y;
+             }
+             if (v.p.y >= obst[i].p1.y && v.p.y <= obst[i].p1.y + obst[i].p2.y
+               && v.p.z >= obst[i].p1.z && v.p.z <= obst[i].p1.z + obst[i].p2.z
+               && v.p.x < obst[i].p1.x && v.p.x + v.d.x >= obst[i].p1.x) {
+                 v.d.x = Math.abs(v.d.x) * -0.5;
+                 //v.p.x += v.d.x;
+                 v.p.x = obst[i].p1.x;
+             }
+             if (v.p.x >= obst[i].p1.x && v.p.x <= obst[i].p1.x + obst[i].p2.x
+               && v.p.z >= obst[i].p1.z && v.p.z <= obst[i].p1.z + obst[i].p2.z
+               && v.p.y > obst[i].p1.y + obst[i].p2.y && v.p.y + v.d.y <= obst[i].p1.y + obst[i].p2.y) {
+                 v.d.y = Math.abs(v.d.y) * 0.5;
+                 //v.p.y += v.d.y;
+                 v.p.y = obst[i].p1.y + obst[i].p2.y;
+             }
+             if (v.p.y >= obst[i].p1.y && v.p.y <= obst[i].p1.y + obst[i].p2.y
+               && v.p.z >= obst[i].p1.z && v.p.z <= obst[i].p1.z + obst[i].p2.z
+               && v.p.x > obst[i].p1.x + obst[i].p2.x && v.p.x + v.d.x <= obst[i].p1.x + obst[i].p2.x) {
+                 v.d.x = Math.abs(v.d.x) * 0.5;
+                 //v.p.x += v.d.x;
+                 v.p.x = obst[i].p1.x + obst[i].p2.x;
+             }
+             if (v.p.x >= obst[i].p1.x && v.p.x <= obst[i].p1.x + obst[i].p2.x
+               && v.p.y >= obst[i].p1.y && v.p.y <= obst[i].p1.y + obst[i].p2.y
+               && v.p.z - 1.5 > obst[i].p1.z + obst[i].p2.z && v.p.z - 1.5 + v.d.z <= obst[i].p1.z + obst[i].p2.z) {
+                 v.d.z = Math.abs(v.d.z) * 0.5;
+                 //v.p.z += v.d.z;
+                 v.p.z = obst[i].p1.z + obst[i].p2.z;
+             }
+        
+           }
+           
+           v.d = v.d.multiply(0.9);
+           v.d.z *= 1 / 0.9;
+
+           v.p = v.p.add(v.d);
+
+
+           ctx.font = "24px Arial";
+           ctx.fillText(v.ry, 20, 20);
+
+           requestAnimationFrame(loop);
+       }
+
+       loop();
+   </script>
+ </body>
+</html>
